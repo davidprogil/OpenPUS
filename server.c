@@ -43,31 +43,20 @@ int main(int argc, char *argv[])
 	printf("SERVER\n");
 
 	//road map:
-	// x server folder
-	// x maestro template and init integrated
-	// x OSAL integrated
-	// x maestro running each 1 sec
-	// x application1 template and init integrated
-	// x maestro scheduling application1
-	// x server sends commands to application
-	// x configuration file
-	// x client/server separation
-	// x data link abstraction
-	// x - application responds back
-	// x -handle TM PID
-	// x - make SendDirect private
-	// x - client handles response
-	// x - APID 0 is reserved for spacecraft time packets
-	// x - address TODOs
-	// x - mechanism to safely stop threads
+	// x PUS data model
+	// x client creates ping
+	// - server responds
+	// - service 17
+	// - publish
+	// - service 1
+	// - publish
+	// - service 3
+	// - publish
+	// - service 5
+	// - publish
+	// - sample payload
+	// - publish
 	// - documentation
-	// - template
-	// - intro
-	// - architecture static
-	// - architecture dynamic
-	// - integration example PPC
-	// - add application
-
 
 	//hardware initialization
 	//not applicable in standard linux pc

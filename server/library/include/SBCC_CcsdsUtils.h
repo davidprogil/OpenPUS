@@ -62,7 +62,7 @@ typedef struct __attribute__((packed)) _CCSDS_Packet_t_
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-bool_t CCSDS_CreatePacket(uint8_t *target,uint16_t targetNb,bool_t isTc,bool_t hasSecondaryHeader,uint16_t apid,uint16_t sequenceCount,uint16_t dataLength,uint8_t *data);
+bool_t CCSDS_CreatePacket(uint8_t *target,uint16_t targetNbMax,bool_t isTc,bool_t hasSecondaryHeader,uint16_t apid,uint16_t sequenceCount,uint16_t dataLength,uint8_t *data);
 void CCSDS_PrintPacket(CCSDS_Packet_t *this);
 
 /* end */

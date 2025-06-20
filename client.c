@@ -17,6 +17,7 @@
 #include <ABOS_Osal.h>
 #include <ABDL_DataLink.h>
 #include <SBCC_CcsdsUtils.h>
+#include <LIB_PusUtils.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -50,7 +51,9 @@ int main(int argc, char *argv[])
 	//not applicable in standard linux pc
 
 	//checks
-	printf("size of CCSDS_PrimaryHeader_t: %ld\n",sizeof(CCSDS_PrimaryHeader_t));
+	printf("size of CCSDS_PrimaryHeader_t: %ld\n", sizeof(CCSDS_PrimaryHeader_t));
+	printf("size of PUS_TmSecondaryHeader_t: %ld\n",sizeof(PUS_TmSecondaryHeader_t));
+	printf("size of PUS_TcSecondaryHeader_t: %ld\n",sizeof(PUS_TcSecondaryHeader_t));
 
 	//library initializations
 	//N/A
@@ -65,6 +68,8 @@ int main(int argc, char *argv[])
 	//Infinite Cycle
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
 	uint16_t receivedNb;
+	uint8_t tcPacketData[sizeof(PUS_TcSecondaryHeader_t)+2];
+
 	while (isRunAgain==M_TRUE)
 	{
 
@@ -74,32 +79,50 @@ int main(int argc, char *argv[])
 		if ((upTime>0)&&(upTime%5==0))
 		{
 			printf("time to send packet\n");
+			//data
 			uint8_t dummyDataToSend[2] = {sequenceCount+3,sequenceCount+4};
 
-			//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
-
-			if (CCSDS_CreatePacket(
-					packetBuffer, //target
-					sizeof(packetBuffer), //targetNb
-					M_TRUE, //isTc
-					M_FALSE, //hasSecondaryHeader,
-					APP1_APID,//apid,
-					sequenceCount,
-					sizeof(dummyDataToSend),
-					dummyDataToSend) ==M_FALSE)
+			if(M_FALSE==PUS_CreateTcDataField(
+					tcPacketData,//uint8_t *target
+					sizeof(tcPacketData),//uint16_t targetMaxNb
+					dummyDataToSend,//uint8_t *data
+					sizeof(dummyDataToSend),//uint16_t dataNb
+					M_FALSE,//bool_t isWantedAcknowledgment
+					M_FALSE,//bool_t isWantedExecutionResul
+					17,//uint8_t serviceType
+					1,//uint8_t serviceSubType
+					GROUND_APID)//uint16_t sourceId
+			)
 			{
+				//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
 
-				CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+				if (CCSDS_CreatePacket(
+						packetBuffer, //target
+						sizeof(packetBuffer), //targetNb
+						M_TRUE, //isTc
+						M_FALSE, //hasSecondaryHeader,
+						APP1_APID,//apid,
+						sequenceCount,
+						sizeof(tcPacketData),
+						tcPacketData) ==M_FALSE)
+				{
 
-				//send the packet
-				ABDL_Send(&dataLink,packetBuffer,sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend));
+					CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
 
-				//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
-				sequenceCount++;
+					//send the packet
+					ABDL_Send(&dataLink,packetBuffer,sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend));
+
+					//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
+					sequenceCount++;
+				}
+				else
+				{
+					printf("warning: main, error creating packet\n");
+				}
 			}
 			else
 			{
-				printf("warning: main, error creating packet\n");
+				printf("warning: main, error creating PUS packet\n");
 			}
 		}
 		//receive packets

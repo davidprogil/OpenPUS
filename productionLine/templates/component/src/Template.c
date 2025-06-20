@@ -9,10 +9,10 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include <CMPN_Template.h>
+/* none */
 
 /* component includes----------------------------------------------------------*/
-/* none */
+#include <CMPN_Template.h>
 
 /* local macros ---------------------------------------------------------------*/
 /* none */
