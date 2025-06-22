@@ -45,11 +45,25 @@ int main(int argc, char *argv[])
 	//road map:
 	// x PUS data model
 	// x client creates ping
+	// x - print PUS TC
+	// - print PUS TM
 	// - server responds
+	// - payloadApp
+	// - simulate uptime counter, reset
+	// - application tutorial
+	// - document
+	// - publish
+	// - services component
 	// - service 17
 	// - publish
+	// - service 17,3
+	// - packet validators
+	// - packet encoders
+	// - packet decoders
 	// - service 1
 	// - publish
+	// - packets data model
+	// - issue code generation
 	// - service 3
 	// - publish
 	// - service 5

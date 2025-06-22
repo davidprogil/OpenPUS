@@ -66,33 +66,51 @@ bool_t CCSDS_CreatePacket(uint8_t *target,uint16_t targetNbMax,bool_t isTc,bool_
 	return isError;
 }
 
-void CCSDS_PrintPacket(CCSDS_Packet_t *this)
+void CCSDS_PrintPrimaryHeader(CCSDS_Packet_t *self)
 {
 	printf("CCSDS packet:\n");
 	//header
 	//uint8_t versionNumber:3; //0 CCSDS 133.0-B-1
-	printf("\t versionNumber: %d\n",this->primaryHeader.versionNumber);
+	printf("\t versionNumber: %d\n",self->primaryHeader.versionNumber);
 	//uint8_t packetType:1; //0-TM, 1-TC
-	printf("\t packetType: %d\n",this->primaryHeader.packetType);
+	printf("\t packetType: %d\n",self->primaryHeader.packetType);
 	//uint8_t secondaryHeader:1; //0-no 1-yes
-	printf("\t secondaryHeader: %d\n",this->primaryHeader.secondaryHeader);
+	printf("\t secondaryHeader: %d\n",self->primaryHeader.secondaryHeader);
 	//uint16_t apid:11;
-	printf("\t apid: %d\n",this->primaryHeader.apid);
+	printf("\t apid: %d\n",self->primaryHeader.apid);
 	//sequence control
 	//uint8_t sequenceFlag:2; //11 for stand alone
-	printf("\t sequenceFlag: %d\n",this->primaryHeader.sequenceFlag);
+	printf("\t sequenceFlag: %d\n",self->primaryHeader.sequenceFlag);
 	//uint16_t sequenceCount:14;
-	printf("\t sequenceFlag: %d\n",this->primaryHeader.sequenceCount);
+	printf("\t sequenceFlag: %d\n",self->primaryHeader.sequenceCount);
 	//packet data length //16 bits
 	//uint16_t dataLength;
-	printf("\t dataLength: %d\n",this->primaryHeader.dataLength);
+	printf("\t dataLength: %d\n",self->primaryHeader.dataLength);
+}
+
+void CCSDS_PrintPacket(CCSDS_Packet_t *self)
+{
+	CCSDS_PrintPrimaryHeader(self);
 	//data
 	printf("\t data:");
-	for (uint16_t bIx=0;bIx<this->primaryHeader.dataLength;bIx++)
+	for (uint16_t bIx=0;bIx<self->primaryHeader.dataLength;bIx++)
 	{
-		printf(" %d",((uint8_t*)&this->data)[bIx]);
+		printf(" %d",((uint8_t*)&self->data)[bIx]);
 	}
 	printf("\n");
+}
+
+bool_t CCSDS_ValidatePacketSize(CCSDS_Packet_t *self,uint16_t packetNb)
+{
+	bool_t isError=M_FALSE;
+
+	if (packetNb<CCSDS_PACKET_TOTAL_LENGHT(self))
+	{
+		printf("warning: CCSDS_ValidatePacketSize packetNb %d needed %ld\n",packetNb,CCSDS_PACKET_TOTAL_LENGHT(self));
+		isError=M_TRUE;
+	}
+
+	return isError;
 }
 
 

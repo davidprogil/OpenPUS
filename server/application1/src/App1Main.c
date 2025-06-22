@@ -9,10 +9,10 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include <APP1_App1Main.h>
+#include <LIB_PusUtils.h>
 
 /* component includes----------------------------------------------------------*/
-/* none */
+#include <APP1_App1Main.h>
 
 /* local macros ---------------------------------------------------------------*/
 /* none */
@@ -91,11 +91,14 @@ void APP1_Execute(APP1_App1Main_t *this)
 	uint8_t *packetData;
 	uint8_t temp;
 	uint16_t processedTcNo = 0;
+	PUS_TcSecondaryHeader_t *tcHeader=NULL;
 
 	// Lock the queue for safe access
 	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
 
 	// Process packets in the queue (up to a max number)
+	//TODO change this while to something that only blocks when accessing the data
+	//TODO OpenCCSDS change this while to something that only blocks when accessing the data
 	while ((LFQ_QueueGet(&this->packetQueue, packetBuffer, &packetSize)) &&
 			(processedTcNo < APP1_TC_MAX_NB))
 	{
@@ -104,23 +107,40 @@ void APP1_Execute(APP1_App1Main_t *this)
 		packet = (CCSDS_Packet_t *)packetBuffer;
 		CCSDS_PrintPacket(packet);
 
-		if (packetSize >= sizeof(CCSDS_PrimaryHeader_t) + 2)
+		tcHeader=PUS_GetTcHeader(packetBuffer,packetSize);
+
+		if (tcHeader!=NULL)
 		{
-			// Simple transformation: swap first two bytes of the packet data
-			packetData = &packet->data;
-			temp = packetData[1];
-			packetData[1] = packetData[0];
-			packetData[0] = temp;
+			PUS_PrintTcHeader(tcHeader);
 		}
+		//get data
+		//TODO
+		//switch data
+		//TODO
+		//create TM
+		//TODO
+		//Send
+		//TODO
 
-		// Modify packet to be telemetry instead of telecommand
-		packet->primaryHeader.packetType = CCSDS_PRIMARY_HEADER_IS_TM;
 
-		printf("APP1_DataHandler sending response:\n");
-		CCSDS_PrintPacket(packet);
 
-		// Publish response packet back to the router
-		SBRO_Publish(this->router, packetBuffer, packetSize);
+//		if (packetSize >= sizeof(CCSDS_PrimaryHeader_t) + 2)
+//		{
+//			// Simple transformation: swap first two bytes of the packet data
+//			packetData = &packet->data;
+//			temp = packetData[1];
+//			packetData[1] = packetData[0];
+//			packetData[0] = temp;
+//		}
+//
+//		// Modify packet to be telemetry instead of telecommand
+//		packet->primaryHeader.packetType = CCSDS_PRIMARY_HEADER_IS_TM;
+//
+//		printf("APP1_DataHandler sending response:\n");
+//		CCSDS_PrintPacket(packet);
+//
+//		// Publish response packet back to the router
+//		SBRO_Publish(this->router, packetBuffer, packetSize);
 
 		processedTcNo++;
 	}

@@ -87,6 +87,7 @@ void ABDL_Stop(ABDL_DataLink_t *this)
 
 void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 {
+	printf("debug: ABDL_Send %d bytes\n",dataOutNb);
 	ABOS_MutexLock(&this->sendQueueMutex,ABOS_TASK_MAX_DELAY);
 	if (LFQ_QueueAdd(&this->sendQueue,dataOut,dataOutNb)==M_TRUE)
 	{

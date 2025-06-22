@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
 	uint16_t receivedNb;
 	uint8_t tcPacketData[sizeof(PUS_TcSecondaryHeader_t)+2];
-
+	bool_t isError=M_FALSE;
 	while (isRunAgain==M_TRUE)
 	{
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 			//data
 			uint8_t dummyDataToSend[2] = {sequenceCount+3,sequenceCount+4};
 
-			if(M_FALSE==PUS_CreateTcDataField(
+			isError=PUS_CreateTcDataField(
 					tcPacketData,//uint8_t *target
 					sizeof(tcPacketData),//uint16_t targetMaxNb
 					dummyDataToSend,//uint8_t *data
@@ -91,8 +91,10 @@ int main(int argc, char *argv[])
 					M_FALSE,//bool_t isWantedExecutionResul
 					17,//uint8_t serviceType
 					1,//uint8_t serviceSubType
-					GROUND_APID)//uint16_t sourceId
-			)
+					GROUND_APID);//uint16_t sourceId
+
+			if(M_FALSE==isError)
+
 			{
 				//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
 
@@ -100,17 +102,18 @@ int main(int argc, char *argv[])
 						packetBuffer, //target
 						sizeof(packetBuffer), //targetNb
 						M_TRUE, //isTc
-						M_FALSE, //hasSecondaryHeader,
+						M_TRUE, //hasSecondaryHeader,
 						APP1_APID,//apid,
 						sequenceCount,
 						sizeof(tcPacketData),
 						tcPacketData) ==M_FALSE)
 				{
 
-					CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+					//CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+					PUS_PrintTc(packetBuffer,sizeof(packetBuffer));
 
 					//send the packet
-					ABDL_Send(&dataLink,packetBuffer,sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend));
+					ABDL_Send(&dataLink,packetBuffer,CCSDS_PACKET_TOTAL_LENGHT((CCSDS_Packet_t*)packetBuffer));
 
 					//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
 					sequenceCount++;

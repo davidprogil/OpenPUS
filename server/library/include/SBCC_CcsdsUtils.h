@@ -22,6 +22,10 @@
 
 #define CCSDS_PRIMARY_HEADER_IS_TM (0)
 #define CCSDS_PRIMARY_HEADER_IS_TC (1)
+
+#define CCSDS_PACKET_TOTAL_LENGHT(x) ((x)->primaryHeader.dataLength+sizeof(CCSDS_PrimaryHeader_t))
+#define CCSDS_PACKET_DATA_LENGHT(x) ((x)->primaryHeader.dataLength)
+
 /* types------------------------------------------------------------------------*/
 /*CCSDS-PUS ECSS-E-ST-70-41C15April2016-PUS
 -- packet primary header
@@ -58,12 +62,16 @@ typedef struct __attribute__((packed)) _CCSDS_Packet_t_
 	uint8_t data;
 } CCSDS_Packet_t;
 
+
+
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
 bool_t CCSDS_CreatePacket(uint8_t *target,uint16_t targetNbMax,bool_t isTc,bool_t hasSecondaryHeader,uint16_t apid,uint16_t sequenceCount,uint16_t dataLength,uint8_t *data);
-void CCSDS_PrintPacket(CCSDS_Packet_t *this);
+void CCSDS_PrintPrimaryHeader(CCSDS_Packet_t *self);
+void CCSDS_PrintPacket(CCSDS_Packet_t *self);
+bool_t CCSDS_ValidatePacketSize(CCSDS_Packet_t *self,uint16_t packetNb);
 
 /* end */
 #endif /* SBCC_CcsdsUtils_H */

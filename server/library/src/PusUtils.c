@@ -13,6 +13,7 @@
 /* none */
 
 /* component includes----------------------------------------------------------*/
+#include <SBCC_CcsdsUtils.h>
 #include <LIB_PusUtils.h>
 
 /* local macros ---------------------------------------------------------------*/
@@ -60,6 +61,31 @@ void PUS_CreateTcHeader(PUS_TcSecondaryHeader_t *this, bool_t isWantedAcknowledg
 	//uint8_t spare0; //total size of header needs to be of a integer word size
 }
 
+PUS_TcSecondaryHeader_t *PUS_GetTcHeader(uint8_t *packetBuffer,uint16_t packetNb)
+{
+	CCSDS_Packet_t *packet = (CCSDS_Packet_t *)packetBuffer;
+	PUS_TcSecondaryHeader_t *tcHeader=NULL;
+	if (packet->primaryHeader.secondaryHeader==M_FALSE)
+	{
+		printf("warning: APP1_DataHandler received non PUS packet\n");
+	}
+	else
+	{
+		//validate
+		if (PUS_IS_TC_HEADER_SIZE(packet))
+		{
+			//map tcHeader
+			tcHeader=(PUS_TcSecondaryHeader_t *)&packetBuffer[sizeof(CCSDS_PrimaryHeader_t)];
+		}
+		else
+		{
+			printf("warning: APP1_DataHandler received non PUS packet\n");
+		}
+	}
+
+	return tcHeader;
+}
+
 void PUS_PrintTcHeader(PUS_TcSecondaryHeader_t *this)
 {
 	printf("TC Secondary Header packet:\n");
@@ -100,6 +126,31 @@ bool_t PUS_JoinTmHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TmSecond
 	}
 
 	return isError;
+}
+
+void PUS_PrintTc(uint8_t *packet, uint16_t packetNb)
+{
+	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
+	//validation
+	if (M_FALSE==CCSDS_ValidatePacketSize(self,packetNb))
+	{
+		//primary header
+		CCSDS_PrintPrimaryHeader(self);
+		//secondary header
+		if (self->primaryHeader.secondaryHeader)
+		{
+			PUS_PrintTcHeader((PUS_TcSecondaryHeader_t *)&packet[sizeof(CCSDS_PrimaryHeader_t)]);
+		}
+		//data
+		uint16_t remainingData=CCSDS_PACKET_DATA_LENGHT(self)-sizeof(PUS_TcSecondaryHeader_t);
+		printf("data(%d): \n\t",remainingData);
+		for (uint16_t bIx=0;bIx<remainingData;bIx++)
+		{
+			printf(" %d",((uint8_t*)&self->data)[bIx+sizeof(PUS_TcSecondaryHeader_t)]);
+		}
+		printf("\n");
+	}
+
 }
 
 /* local functions ------------------------------------------------------------*/
