@@ -131,7 +131,8 @@ int main(int argc, char *argv[])
 		//receive packets
 		if (ABDL_GetOnePacket(&dataLink,packetBuffer,&receivedNb))
 		{
-			CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+			//CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+			PUS_PrintPacket(packetBuffer,sizeof(packetBuffer));
 		}
 
 		//wait

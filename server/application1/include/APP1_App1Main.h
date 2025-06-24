@@ -40,6 +40,9 @@ typedef struct _APP1_App1Main_t_
 	uint16_t receivedPacketsNo;   // Number of packets received
 	uint16_t rejectedPacketsNo;   // Number of packets rejected (e.g. due to full queue)
 
+	uint16_t thisPidSequenceCount; // Number of messages created by this PID
+	uint16_t messageType17s2Counter; // Number of TM(17,2) generated
+
 	// Execution control flag
 	bool_t isRunAgain;            // When false, terminates main thread loop
 

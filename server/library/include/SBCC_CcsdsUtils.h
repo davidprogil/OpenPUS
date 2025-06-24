@@ -25,6 +25,7 @@
 
 #define CCSDS_PACKET_TOTAL_LENGHT(x) ((x)->primaryHeader.dataLength+sizeof(CCSDS_PrimaryHeader_t))
 #define CCSDS_PACKET_DATA_LENGHT(x) ((x)->primaryHeader.dataLength)
+#define CCSDS_PACKET_START_DATA (sizeof(CCSDS_PrimaryHeader_t))
 
 /* types------------------------------------------------------------------------*/
 /*CCSDS-PUS ECSS-E-ST-70-41C15April2016-PUS

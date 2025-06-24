@@ -53,7 +53,8 @@ void APP1_Init(APP1_App1Main_t *this, SBRO_Router_t *router,
 	this->receivedPacketsNo = 0;
 	this->rejectedPacketsNo = 0;
 	this->isRunAgain = M_TRUE;
-
+	this->messageType17s2Counter = 0;
+	this->thisPidSequenceCount=0;
 	// Initialize packet queue
 	LFQ_Init(&this->packetQueue, this->packetQueueBuffer, APP1_QUEUE_NB);
 	ABOS_MutexCreate(&this->packetQueueMutex);
@@ -81,72 +82,104 @@ void APP1_Stop(APP1_App1Main_t *this)
 
 
 /* local functions -----------------------------------------------------------*/
+//TODO put in the end
+//TODO prototype
+void APP1_CreateTm17s2AndSend(APP1_App1Main_t *this,uint8_t *data,uint16_t dataNb,uint16_t destinationId)
+{
+	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];  // Temporary buffer for one packet
+	bool_t isError=M_FALSE;
+
+	//printf("debug %d %d %d,\n",data[0],data[1],dataNb);
+	//create tm and data field
+	if (isError!=M_TRUE)
+	{
+		isError=PUS_CreateTmDataField(
+				&packetBuffer[CCSDS_PACKET_START_DATA],sizeof(packetBuffer)-sizeof(CCSDS_PrimaryHeader_t), //target and size
+				data,dataNb, //data
+				17, 2, //service, subservice
+				this->messageType17s2Counter,
+				destinationId);
+	}
+
+	if (isError!=M_TRUE)
+	{
+		isError=CCSDS_CreatePacket(
+				packetBuffer, //target
+				sizeof(packetBuffer), //targetNb
+				M_FALSE, //isTc
+				M_TRUE, //hasSecondaryHeader,
+				APP1_APID,//apid,
+				this->thisPidSequenceCount,
+				dataNb+sizeof(PUS_TmSecondaryHeader_t),
+				&packetBuffer[CCSDS_PACKET_START_DATA]);
+	}
+
+	//Send
+	if (isError!=M_TRUE)
+	{
+		//CCSDS_PrintPacket(packet);
+		PUS_PrintTm(packetBuffer, sizeof(packetBuffer));
+		//print TC
+		SBRO_Publish(this->router, packetBuffer, CCSDS_PACKET_TOTAL_LENGHT((CCSDS_Packet_t*)packetBuffer));//temp
+		this->messageType17s2Counter++;
+		this->thisPidSequenceCount++;
+	}
+}
+
 // Main execution function for APP1
 // Processes all telecommands in the queue and sends back a response
 void APP1_Execute(APP1_App1Main_t *this)
 {
+	//TODO move to function that deals with incoming TCs
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];  // Temporary buffer for one packet
 	uint16_t packetSize;
 	CCSDS_Packet_t *packet;
 	uint8_t *packetData;
+	uint16_t packetDataSize;
 	uint8_t temp;
 	uint16_t processedTcNo = 0;
 	PUS_TcSecondaryHeader_t *tcHeader=NULL;
+	bool_t isTherePacket;
 
-	// Lock the queue for safe access
-	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
 
 	// Process packets in the queue (up to a max number)
-	//TODO change this while to something that only blocks when accessing the data
-	//TODO OpenCCSDS change this while to something that only blocks when accessing the data
-	while ((LFQ_QueueGet(&this->packetQueue, packetBuffer, &packetSize)) &&
+	//TODO OpenCCSDS accordingly
+	while ( (isTherePacket=LFQ_QueueGetWithMutex(&this->packetQueue, &this->packetQueueMutex, packetBuffer, &packetSize)) &&
 			(processedTcNo < APP1_TC_MAX_NB))
 	{
 		printf("APP1_DataHandler received packet:\n");
 
 		packet = (CCSDS_Packet_t *)packetBuffer;
-		CCSDS_PrintPacket(packet);
+		//TODO check that packet is valid
+		//CCSDS_PrintPacket(packet);
+		PUS_PrintTc(packetBuffer,packetSize);
 
 		tcHeader=PUS_GetTcHeader(packetBuffer,packetSize);
 
 		if (tcHeader!=NULL)
 		{
-			PUS_PrintTcHeader(tcHeader);
+			//ddebug PUS_PrintTcHeader(tcHeader);
+			//check service/subservice
+			if ((tcHeader->serviceType==17)&&(tcHeader->serviceSubType==1)) // ping request
+			{
+				//get data
+				packetData=PUS_GetTcDataPointer(&packetDataSize,packetBuffer,packet->primaryHeader.dataLength);
+				//switch data
+				temp = packetData[1];
+				packetData[1] = packetData[0];
+				packetData[0] = temp;
+				//printf("debug %d %d\n",packetData[0],packetData[1]);
+				//create and send TM(17,2)
+				APP1_CreateTm17s2AndSend(this,packetData,PUS_GET_TC_DATA_SIZE(packet),GROUND_APID);
+			}
 		}
-		//get data
-		//TODO
-		//switch data
-		//TODO
-		//create TM
-		//TODO
-		//Send
-		//TODO
 
-
-
-//		if (packetSize >= sizeof(CCSDS_PrimaryHeader_t) + 2)
-//		{
-//			// Simple transformation: swap first two bytes of the packet data
-//			packetData = &packet->data;
-//			temp = packetData[1];
-//			packetData[1] = packetData[0];
-//			packetData[0] = temp;
-//		}
-//
-//		// Modify packet to be telemetry instead of telecommand
-//		packet->primaryHeader.packetType = CCSDS_PRIMARY_HEADER_IS_TM;
-//
-//		printf("APP1_DataHandler sending response:\n");
-//		CCSDS_PrintPacket(packet);
-//
-//		// Publish response packet back to the router
-//		SBRO_Publish(this->router, packetBuffer, packetSize);
 
 		processedTcNo++;
 	}
 
 	// Unlock queue after processing
-	ABOS_MutexUnlock(&this->packetQueueMutex);
+
 }
 
 // Called when a packet for APP1 is received by the router

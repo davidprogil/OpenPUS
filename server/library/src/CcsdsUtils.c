@@ -82,7 +82,7 @@ void CCSDS_PrintPrimaryHeader(CCSDS_Packet_t *self)
 	//uint8_t sequenceFlag:2; //11 for stand alone
 	printf("\t sequenceFlag: %d\n",self->primaryHeader.sequenceFlag);
 	//uint16_t sequenceCount:14;
-	printf("\t sequenceFlag: %d\n",self->primaryHeader.sequenceCount);
+	printf("\t sequenceCount: %d\n",self->primaryHeader.sequenceCount);
 	//packet data length //16 bits
 	//uint16_t dataLength;
 	printf("\t dataLength: %d\n",self->primaryHeader.dataLength);

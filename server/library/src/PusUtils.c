@@ -44,20 +44,52 @@ bool_t PUS_CreateTcDataField(uint8_t *target,uint16_t targetMaxNb,uint8_t *data,
 	return isError;
 
 }
-void PUS_CreateTcHeader(PUS_TcSecondaryHeader_t *this, bool_t isWantedAcknowledgment, bool_t isWantedExecutionResult, uint8_t serviceType, uint8_t serviceSubType, uint16_t sourceId)
+
+bool_t PUS_CreateTmDataField(uint8_t *target,uint16_t targetMaxNb,uint8_t *data, uint16_t dataNb, uint8_t serviceType, uint8_t serviceSubType,uint16_t messageTypeCounter,uint16_t destinationId)
 {
-	memset(this,0,sizeof(PUS_TcSecondaryHeader_t));
+	bool_t isError=M_FALSE;
+
+	PUS_TmSecondaryHeader_t header;
+	PUS_CreateTmHeader(&header,serviceType,serviceSubType,messageTypeCounter,destinationId);
+
+	isError=PUS_JoinTmHeaderAndData(target,targetMaxNb,&header,data,dataNb);
+
+	return isError;
+}
+
+void PUS_CreateTcHeader(PUS_TcSecondaryHeader_t *self, bool_t isWantedAcknowledgment, bool_t isWantedExecutionResult, uint8_t serviceType, uint8_t serviceSubType, uint16_t sourceId)
+{
+	memset(self,0,sizeof(PUS_TcSecondaryHeader_t));
 	//uint8_t versionTcPus:4; //should be = 1 for ECSS-E-70-41A
-	this->versionTcPus=PUS_VERSION_NO;
+	self->versionTcPus=PUS_VERSION_NO;
 	//uint8_t acknowledgementFlags:4; //bit 3 = successful acknowledgment //bit 2 = successful start of execution //bit 1 = successful progress of execution // successful end of execution
-	this->acknowledgementFlags= (this->acknowledgementFlags) | ( isWantedAcknowledgment << 3);
-	this->acknowledgementFlags= (this->acknowledgementFlags) | ( isWantedExecutionResult << 0);
+	self->acknowledgementFlags= (self->acknowledgementFlags) | ( isWantedAcknowledgment << 3);
+	self->acknowledgementFlags= (self->acknowledgementFlags) | ( isWantedExecutionResult << 0);
 	//uint8_t serviceType;
-	this->serviceType=serviceType;
+	self->serviceType=serviceType;
 	//uint8_t serviceSubType;
-	this->serviceSubType=serviceSubType;
+	self->serviceSubType=serviceSubType;
 	//uint16_t sourceId;
-	this->sourceId=sourceId;
+	self->sourceId=sourceId;
+	//uint8_t spare0; //total size of header needs to be of a integer word size
+}
+void PUS_CreateTmHeader(PUS_TmSecondaryHeader_t *self, uint8_t serviceType, uint8_t serviceSubType,uint16_t messageTypeCounter,uint16_t destinationId)
+{
+	memset(self,0,sizeof(PUS_TmSecondaryHeader_t));
+	//uint8_t versionTmPus:4; //should be = 1 for ECSS-E-70-41A
+	self->versionTmPus=1;
+	//uint8_t scTimeReferenceStatus:4; //0 when not supported NOTS
+	self->scTimeReferenceStatus=0;
+	//uint8_t serviceType;
+	self->serviceType=serviceType;
+	//uint8_t serviceSubType;
+	self->serviceSubType=serviceSubType;
+	//uint16_t messageTypeCounter;//per pid, per type/subtype, or 0 if not supported NOTS
+	self->messageTypeCounter=messageTypeCounter;
+	//uint16_t destinationId;
+	self->destinationId=destinationId;
+	//uint32_t time;
+	self->time=0;//TODO
 	//uint8_t spare0; //total size of header needs to be of a integer word size
 }
 
@@ -86,14 +118,34 @@ PUS_TcSecondaryHeader_t *PUS_GetTcHeader(uint8_t *packetBuffer,uint16_t packetNb
 	return tcHeader;
 }
 
-void PUS_PrintTcHeader(PUS_TcSecondaryHeader_t *this)
+uint8_t *PUS_GetTcDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDataLength)
+{
+	uint8_t *dataPointer=&packet[sizeof(CCSDS_PrimaryHeader_t)+sizeof(PUS_TcSecondaryHeader_t)];
+	*dataSize=pusDataLength-sizeof(PUS_TcSecondaryHeader_t);
+
+	return dataPointer;
+}
+
+void PUS_PrintTcHeader(PUS_TcSecondaryHeader_t *self)
 {
 	printf("TC Secondary Header packet:\n");
-	printf("\t versionTcPus: %d\n",this->versionTcPus);
-	printf("\t acknowledgementFlags: %d\n",this->acknowledgementFlags);
-	printf("\t serviceType: %d\n",this->serviceType);
-	printf("\t serviceSubType: %d\n",this->serviceSubType);
-	printf("\t sourceId: %d\n",this->sourceId);
+	printf("\t versionTcPus: %d\n",self->versionTcPus);
+	printf("\t acknowledgementFlags: %d\n",self->acknowledgementFlags);
+	printf("\t serviceType: %d\n",self->serviceType);
+	printf("\t serviceSubType: %d\n",self->serviceSubType);
+	printf("\t sourceId: %d\n",self->sourceId);
+}
+
+void PUS_PrintTmHeader(PUS_TmSecondaryHeader_t *self)
+{
+	printf("TM Secondary Header packet:\n");
+	printf("\t versionTmPus: %d\n",self->versionTmPus);
+	printf("\t scTimeReferenceStatus: %d\n",self->scTimeReferenceStatus);
+	printf("\t serviceType: %d\n",self->serviceType);
+	printf("\t serviceSubType: %d\n",self->serviceSubType);
+	printf("\t messageTypeCounter: %d\n",self->messageTypeCounter);
+	printf("\t destinationId: %d\n",self->destinationId);
+	printf("\t time: %d\n",self->time);
 }
 
 bool_t PUS_JoinTcHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TcSecondaryHeader_t *header,uint8_t *data, uint16_t dataNb)
@@ -102,6 +154,7 @@ bool_t PUS_JoinTcHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TcSecond
 	if (targetMaxNb<dataNb+sizeof(PUS_TcSecondaryHeader_t))
 	{
 		isError=M_TRUE;
+		printf("warning: PUS_JoinTmHeaderAndData expected buffer space: %ld found: %d\n",dataNb+sizeof(PUS_TcSecondaryHeader_t),targetMaxNb);
 	}
 	else
 	{
@@ -118,6 +171,7 @@ bool_t PUS_JoinTmHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TmSecond
 	if (targetMaxNb<dataNb+sizeof(PUS_TmSecondaryHeader_t))
 	{
 		isError=M_TRUE;
+		printf("warning: PUS_JoinTmHeaderAndData expected buffer space: %ld found: %d\n",dataNb+sizeof(PUS_TmSecondaryHeader_t),targetMaxNb);
 	}
 	else
 	{
@@ -128,6 +182,22 @@ bool_t PUS_JoinTmHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TmSecond
 	return isError;
 }
 
+void PUS_PrintPacket(uint8_t *packet, uint16_t packetNb)
+{
+	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
+	if (M_FALSE==CCSDS_ValidatePacketSize(self,packetNb))
+	{
+		if (self->primaryHeader.packetType==1)
+		{
+			PUS_PrintTc(packet,packetNb);
+		}
+		else
+		{
+			PUS_PrintTm(packet,packetNb);
+		}
+	}
+}
+
 void PUS_PrintTc(uint8_t *packet, uint16_t packetNb)
 {
 	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
@@ -136,17 +206,45 @@ void PUS_PrintTc(uint8_t *packet, uint16_t packetNb)
 	{
 		//primary header
 		CCSDS_PrintPrimaryHeader(self);
+		uint16_t remainingData=CCSDS_PACKET_DATA_LENGHT(self);
 		//secondary header
 		if (self->primaryHeader.secondaryHeader)
 		{
 			PUS_PrintTcHeader((PUS_TcSecondaryHeader_t *)&packet[sizeof(CCSDS_PrimaryHeader_t)]);
+			remainingData-=sizeof(PUS_TcSecondaryHeader_t);
 		}
 		//data
-		uint16_t remainingData=CCSDS_PACKET_DATA_LENGHT(self)-sizeof(PUS_TcSecondaryHeader_t);
 		printf("data(%d): \n\t",remainingData);
 		for (uint16_t bIx=0;bIx<remainingData;bIx++)
 		{
 			printf(" %d",((uint8_t*)&self->data)[bIx+sizeof(PUS_TcSecondaryHeader_t)]);
+		}
+		printf("\n");
+	}
+
+}
+
+void PUS_PrintTm(uint8_t *packet, uint16_t packetNb)
+{
+	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
+	//validation
+	if (M_FALSE==CCSDS_ValidatePacketSize(self,packetNb))
+	{
+		//primary header
+		CCSDS_PrintPrimaryHeader(self);
+		uint16_t remainingData=CCSDS_PACKET_DATA_LENGHT(self);
+		//secondary header
+		if (self->primaryHeader.secondaryHeader)
+		{
+			PUS_PrintTmHeader((PUS_TmSecondaryHeader_t *)&packet[sizeof(CCSDS_PrimaryHeader_t)]);
+			remainingData-=sizeof(PUS_TmSecondaryHeader_t);
+		}
+		//data
+
+		printf("data(%d): \n\t",remainingData);
+		for (uint16_t bIx=0;bIx<remainingData;bIx++)
+		{
+			printf(" %d",((uint8_t*)&self->data)[bIx+sizeof(PUS_TmSecondaryHeader_t)]);
 		}
 		printf("\n");
 	}
