@@ -46,10 +46,10 @@ int main(int argc, char *argv[])
 	// x PUS data model
 	// x client creates ping
 	// x - print PUS TC
-	// - print PUS TM
-	// - server responds
+	// x print PUS TM
+	// x server responds
 	// - payloadApp
-	// - simulate uptime counter, reset
+	// 	- simulate uptime counter, reset
 	// - application tutorial
 	// - document
 	// - publish

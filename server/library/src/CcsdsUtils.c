@@ -100,17 +100,17 @@ void CCSDS_PrintPacket(CCSDS_Packet_t *self)
 	printf("\n");
 }
 
-bool_t CCSDS_ValidatePacketSize(CCSDS_Packet_t *self,uint16_t packetNb)
+bool_t CCSDS_IsPacketSizeValid(CCSDS_Packet_t *self,uint16_t packetNb)
 {
-	bool_t isError=M_FALSE;
+	bool_t isValid=M_TRUE;
 
 	if (packetNb<CCSDS_PACKET_TOTAL_LENGHT(self))
 	{
-		printf("warning: CCSDS_ValidatePacketSize packetNb %d needed %ld\n",packetNb,CCSDS_PACKET_TOTAL_LENGHT(self));
-		isError=M_TRUE;
+		printf("warning: CCSDS_IsPacketSizeValid packetNb %d needed %ld\n",packetNb,CCSDS_PACKET_TOTAL_LENGHT(self));
+		isValid=M_FALSE;
 	}
 
-	return isError;
+	return isValid;
 }
 
 

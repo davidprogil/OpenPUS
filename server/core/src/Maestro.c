@@ -188,10 +188,16 @@ ABOS_DEFINE_TASK(CMAS_MaestroThread)
 	{
 		printf("debug: CMAS_MaestroThread %d\n",this->upTime);
 
+		//set time stamp of the pus
+		PUS_SetTmTimeStamp(this->upTime);
+
 		//unlblock CMAS_ExecuteThread
 		ABOS_SemaphorePost(&this->semaphoreExecute);
 
+		//sleep
 		ABOS_Sleep(ABOS_MAESTRO_PERIOD_MS);
+
+		//increment time
 		this->upTime++;
 	}
 	return ABOS_TASK_RETURN;

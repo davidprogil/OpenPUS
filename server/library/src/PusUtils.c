@@ -26,7 +26,7 @@
 /* none */
 
 /* local variables ------------------------------------------------------------*/
-/* none */
+uint32_t pusTmTimeStamp=0;
 
 /* local prototypes -----------------------------------------------------------*/
 /* none */
@@ -89,7 +89,7 @@ void PUS_CreateTmHeader(PUS_TmSecondaryHeader_t *self, uint8_t serviceType, uint
 	//uint16_t destinationId;
 	self->destinationId=destinationId;
 	//uint32_t time;
-	self->time=0;//TODO
+	self->time=pusTmTimeStamp;
 	//uint8_t spare0; //total size of header needs to be of a integer word size
 }
 
@@ -185,7 +185,7 @@ bool_t PUS_JoinTmHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TmSecond
 void PUS_PrintPacket(uint8_t *packet, uint16_t packetNb)
 {
 	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
-	if (M_FALSE==CCSDS_ValidatePacketSize(self,packetNb))
+	if (M_TRUE==PUS_IsPacketSizeValid(packet,packetNb))
 	{
 		if (self->primaryHeader.packetType==1)
 		{
@@ -202,7 +202,7 @@ void PUS_PrintTc(uint8_t *packet, uint16_t packetNb)
 {
 	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
 	//validation
-	if (M_FALSE==CCSDS_ValidatePacketSize(self,packetNb))
+	if (M_TRUE==PUS_IsPacketSizeValid(packet,packetNb))
 	{
 		//primary header
 		CCSDS_PrintPrimaryHeader(self);
@@ -228,7 +228,7 @@ void PUS_PrintTm(uint8_t *packet, uint16_t packetNb)
 {
 	CCSDS_Packet_t *self=(CCSDS_Packet_t*) packet;
 	//validation
-	if (M_FALSE==CCSDS_ValidatePacketSize(self,packetNb))
+	if (M_TRUE==PUS_IsPacketSizeValid(packet,packetNb))
 	{
 		//primary header
 		CCSDS_PrintPrimaryHeader(self);
@@ -251,6 +251,43 @@ void PUS_PrintTm(uint8_t *packet, uint16_t packetNb)
 
 }
 
+bool_t PUS_IsPacketSizeValid(uint8_t *packet, uint16_t packetNb)
+{
+	bool_t isValid=M_TRUE;
+	CCSDS_Packet_t *packetStructured = (CCSDS_Packet_t *)packet;
+
+	//cssds size
+	isValid=CCSDS_IsPacketSizeValid(packetStructured,packetNb);
+
+	//pus header size
+	if (isValid)
+	{
+		if (packetStructured->primaryHeader.secondaryHeader)
+		{
+			uint16_t expectedSize=sizeof(CCSDS_PrimaryHeader_t);
+			if (packetStructured->primaryHeader.packetType==CCSDS_PRIMARY_HEADER_IS_TM)
+			{
+				expectedSize+=sizeof(PUS_TmSecondaryHeader_t);
+			}
+			else
+			{
+				expectedSize+=sizeof(PUS_TcSecondaryHeader_t);
+			}
+			//printf("debug %d %d\n",packetNb,expectedSize);
+			if (packetNb<expectedSize)
+			{
+				isValid=M_FALSE;
+			}
+		}
+	}
+
+	return isValid;
+}
+
+void PUS_SetTmTimeStamp(uint32_t timeStamp_p)
+{
+	pusTmTimeStamp=timeStamp_p;
+}
 /* local functions ------------------------------------------------------------*/
 /* none */
 

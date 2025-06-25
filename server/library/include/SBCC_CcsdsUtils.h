@@ -72,7 +72,7 @@ typedef struct __attribute__((packed)) _CCSDS_Packet_t_
 bool_t CCSDS_CreatePacket(uint8_t *target,uint16_t targetNbMax,bool_t isTc,bool_t hasSecondaryHeader,uint16_t apid,uint16_t sequenceCount,uint16_t dataLength,uint8_t *data);
 void CCSDS_PrintPrimaryHeader(CCSDS_Packet_t *self);
 void CCSDS_PrintPacket(CCSDS_Packet_t *self);
-bool_t CCSDS_ValidatePacketSize(CCSDS_Packet_t *self,uint16_t packetNb);
+bool_t CCSDS_IsPacketSizeValid(CCSDS_Packet_t *self,uint16_t packetNb);
 
 /* end */
 #endif /* SBCC_CcsdsUtils_H */

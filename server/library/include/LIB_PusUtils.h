@@ -50,7 +50,6 @@ typedef struct __attribute__((packed)) _PUS_TcSecondaryHeader_t_
 
 /* public functions--------------------------------------------------------------*/
 
-
 //headers creators
 void PUS_CreateTcHeader(PUS_TcSecondaryHeader_t *self, bool_t isWantedAcknowledgment, bool_t isWantedExecutionResult, uint8_t serviceType, uint8_t serviceSubType, uint16_t sourceId);
 void PUS_CreateTmHeader(PUS_TmSecondaryHeader_t *self, uint8_t serviceType, uint8_t serviceSubType,uint16_t messageTypeCounter,uint16_t destinationId);
@@ -76,7 +75,11 @@ void PUS_PrintPacket(uint8_t *packet, uint16_t packetNb);
 void PUS_PrintTc(uint8_t *packet, uint16_t packetNb);
 void PUS_PrintTm(uint8_t *packet, uint16_t packetNb);
 
+//validators
+bool_t PUS_IsPacketSizeValid(uint8_t *packet, uint16_t packetNb);
 
+//management
+void PUS_SetTmTimeStamp(uint32_t timeStamp);
 
 /* end */
 #endif /* LIB_PusUtils_H */
