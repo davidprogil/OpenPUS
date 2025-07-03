@@ -30,7 +30,7 @@ include ./server/core/core.mk
 # application
 include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
-include ./server/pduOperator/pduOperator.mk
+include ./server/deviceOperators/deviceOperators.mk
 
 #------------------------------------------------------------------------------#							
 # compile server
@@ -39,7 +39,8 @@ SERVER_COMPONENT_OBJ=	$(CORE_COMPONENT_OBJ) \
 						$(ABSTRACTION_COMPONENT_OBJ)\
 						$(APPLICATION1_COMPONENT_OBJ) \
 						$(SWBUS_COMPONENT_OBJ) \
-						$(LIBRARY_COMPONENT_OBJ)
+						$(LIBRARY_COMPONENT_OBJ)\
+						$(DEVICEOPERATORS_COMPONENT_OBJ)
 						
 
 SERVER_COMPONENT_INCLUDES=	$(CORE_COMPONENT_INCLUDES) \
@@ -97,9 +98,7 @@ runServer: compileServer
 # compile client
 
 CLIENT_COMPONENT_OBJ=	$(ABSTRACTION_COMPONENT_OBJ)\
-						$(APPLICATION1_COMPONENT_OBJ) \
-						$(SWBUS_COMPONENT_OBJ) \
-						$(LIBRARY_COMPONENT_OBJ)
+						$(LIBRARY_COMPONENT_OBJ) \
 						
 
 CLIENT_COMPONENT_INCLUDES=$(ABSTRACTION_COMPONENT_INCLUDES) \

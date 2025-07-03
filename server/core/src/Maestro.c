@@ -27,10 +27,11 @@
 /* local variables ------------------------------------------------------------*/
 uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={
 		SWBUS_TIME_START_MS,
-		APP1_TIME_START_MS};
+		APP1_TIME_START_MS,
+		DEV_TIME_START_MS};
 uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={
 		SWBUS_TIME_LENGTH_MS,
-		APP1_TIME_LENGTH_MS};
+		DEV_TIME_LENGTH_MS};
 
 /* local prototypes -----------------------------------------------------------*/
 void CMAS_Execute(CMAS_Maestro_t *this);
@@ -100,6 +101,8 @@ void CMAS_Init(CMAS_Maestro_t *this)
 		sIx+=2;
 		APP1_Init(&this->proc1,&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
 		sIx+=2;
+		DEV_Init(&this->pduOperator,&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
+		sIx+=2;
 
 		this->isRunAgain=M_TRUE;
 		/* create threads */
@@ -131,6 +134,7 @@ void CMAS_Stop(CMAS_Maestro_t *this)
 	this->isRunAgain=M_FALSE;
 	SBRO_Stop(&this->swBus);
 	APP1_Stop(&this->proc1);
+	DEV_Stop(&this->pduOperator);
 }
 
 /* local functions ------------------------------------------------------------*/

@@ -4,8 +4,8 @@
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
 
-#ifndef PDU_Operator_H
-#define PDU_Operator_H
+#ifndef DEV_PduOperator_H
+#define DEV_PduOperator_H
 
 /* system includes-------------------------------------------------------------*/
 /* none */
@@ -23,10 +23,10 @@
 /* none */
 
 /* types------------------------------------------------------------------------*/
-// Main structure for PDU application logic and runtime context
-typedef struct _PDU_Operator_t_
+// Main structure for DEV application logic and runtime context
+typedef struct _DEV_PduOperator_t_
 {
-	// Handle for the PDU main execution thread
+	// Handle for the DEV main execution thread
 	ABOS_thread_handle_t threadHandleExecute;
 
 	// Semaphores to synchronize execution with the system scheduler
@@ -52,34 +52,34 @@ typedef struct _PDU_Operator_t_
 	LFQ_Queue_t packetQueue;
 
 	// Underlying storage for the packet queue
-	uint8_t packetQueueBuffer[PDU_QUEUE_NB];
+	uint8_t packetQueueBuffer[DEV_QUEUE_NB];
 
 	// Mutex to protect access to the packet queue
 	ABOS_mutex_t packetQueueMutex;
 
-}PDU_Operator_t;
+}DEV_PduOperator_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
 /**
- * @brief Initializes the PDU module with synchronization and communication resources.
+ * @brief Initializes the DEV module with synchronization and communication resources.
  *
- * @param this Pointer to the PDU context structure
+ * @param this Pointer to the DEV context structure
  * @param router Pointer to the shared router instance
  * @param semaphoreStart Pointer to the start semaphore (provided by scheduler)
  * @param semaphoreEnd Pointer to the end semaphore (provided by scheduler)
  */
-void PDU_Init(PDU_Operator_t *this, SBRO_Router_t *router, ABOS_sem_handle_t *semaphoreStart, ABOS_sem_handle_t *semaphoreEnd);
+void DEV_Init(DEV_PduOperator_t *this, SBRO_Router_t *router, ABOS_sem_handle_t *semaphoreStart, ABOS_sem_handle_t *semaphoreEnd);
 
 /**
- * @brief Stops PDU execution (sets the run flag to false).
+ * @brief Stops DEV execution (sets the run flag to false).
  *
- * @param this Pointer to the PDU context structure
+ * @param this Pointer to the DEV context structure
  */
-void PDU_Stop(PDU_Operator_t *this);
+void DEV_Stop(DEV_PduOperator_t *this);
 
 /* end */
-#endif /* PDU_Operator_H */
+#endif /* DEV_PduOperator_H */
 

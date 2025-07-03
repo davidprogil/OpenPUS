@@ -15,6 +15,7 @@
 #include <ABOS_Osal.h>
 #include <SBRO_Router.h>
 #include <APP1_App1Main.h>
+#include <DEV_PduOperator.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -41,6 +42,7 @@ typedef struct _CMAS_Maestro_t_
 	//sub elements
 	SBRO_Router_t swBus;
 	APP1_App1Main_t proc1;
+	DEV_PduOperator_t pduOperator;
 }CMAS_Maestro_t;
 
 /* public variables-------------------------------------------------------------*/

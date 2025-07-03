@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include <PDU_Operator.h>
+#include <DEV_PduOperator.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -29,20 +29,20 @@
 
 /* local prototypes -----------------------------------------------------------*/
 // Main execution function for processing
-void PDU_Execute(PDU_Operator_t *this);
+void DEV_Execute(DEV_PduOperator_t *this);
 
-// Thread definition macro for PDU execution
-ABOS_DEFINE_TASK(PDU_ExecuteThread);
+// Thread definition macro for DEV execution
+ABOS_DEFINE_TASK(DEV_ExecuteThread);
 
 // Function called when a packet is received for this application
-void PDU_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
+void DEV_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
 
 /* public functions -----------------------------------------------------------*/
-// Initializes the PDU application
-void PDU_Init(PDU_Operator_t *this, SBRO_Router_t *router,
+// Initializes the DEV application
+void DEV_Init(DEV_PduOperator_t *this, SBRO_Router_t *router,
 		ABOS_sem_handle_t *semaphoreStart, ABOS_sem_handle_t *semaphoreEnd)
 {
-	printf("PDU_Init\n");
+	printf("DEV_Init\n");
 
 	// Store semaphore handles
 	this->semaphoreStart = semaphoreStart;
@@ -55,35 +55,35 @@ void PDU_Init(PDU_Operator_t *this, SBRO_Router_t *router,
 	this->isRunAgain = M_TRUE;
 
 	// Initialize packet queue
-	LFQ_Init(&this->packetQueue, this->packetQueueBuffer, PDU_QUEUE_NB);
+	LFQ_Init(&this->packetQueue, this->packetQueueBuffer, DEV_QUEUE_NB);
 	ABOS_MutexCreate(&this->packetQueueMutex);
 	this->router = router;
 
 	// Subscribe to receive packets for this application's APID
-	SBRO_Subscribe(this->router, PDU_APID, this, *PDU_DataHandler);
+	SBRO_Subscribe(this->router, DEV_APID, this, *DEV_DataHandler);
 
 	// Create and start execution thread
 	ABOS_ThreadCreate(
-			PDU_ExecuteThread,              // Thread function
-			(int8_t *)"PDU_EXEC",           // Thread name
-			PDU_THREAD_STACK_SIZE,          // Stack size
+			DEV_ExecuteThread,              // Thread function
+			(int8_t *)"DEV_EXEC",           // Thread name
+			DEV_THREAD_STACK_SIZE,          // Stack size
 			(void *)this,                    // Thread argument
-			PDU_THREAD_PRIORITY,            // Priority
+			DEV_THREAD_PRIORITY,            // Priority
 			&this->threadHandleExecute       // Thread handle
 	);
 }
 
 // Stops the application by exiting the execution loop
-void PDU_Stop(PDU_Operator_t *this)
+void DEV_Stop(DEV_PduOperator_t *this)
 {
 	this->isRunAgain = M_FALSE;
 }
 
 
 /* local functions -----------------------------------------------------------*/
-// Main execution function for PDU
+// Main execution function for DEV
 // Processes all telecommands in the queue and sends back a response
-void PDU_Execute(PDU_Operator_t *this)
+void DEV_Execute(DEV_PduOperator_t *this)
 {
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];  // Temporary buffer for one packet
 	uint16_t packetSize;
@@ -94,11 +94,13 @@ void PDU_Execute(PDU_Operator_t *this)
 	// Lock the queue for safe access
 	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
 
+	//printf("DEV_Execute\n");
+
 	// Process packets in the queue (up to a max number)
 	while ((LFQ_QueueGet(&this->packetQueue, packetBuffer, &packetSize)) &&
-			(processedTcNo < PDU_TC_MAX_NB))
+			(processedTcNo < DEV_TC_MAX_NB))
 	{
-		printf("PDU_DataHandler received packet:\n");
+		printf("DEV_DataHandler received packet:\n");
 
 		packet = (CCSDS_Packet_t *)packetBuffer;
 		CCSDS_PrintPacket(packet);
@@ -114,7 +116,7 @@ void PDU_Execute(PDU_Operator_t *this)
 		// Modify packet to be telemetry instead of telecommand
 		packet->primaryHeader.packetType = CCSDS_PRIMARY_HEADER_IS_TM;
 
-		printf("PDU_DataHandler sending response:\n");
+		printf("DEV_DataHandler sending response:\n");
 		CCSDS_PrintPacket(packet);
 
 		// Publish response packet back to the router
@@ -127,10 +129,10 @@ void PDU_Execute(PDU_Operator_t *this)
 	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 
-// Called when a packet for PDU is received by the router
-void PDU_DataHandler(void *handlingObject, uint8_t *inData, uint32_t inDataNb)
+// Called when a packet for DEV is received by the router
+void DEV_DataHandler(void *handlingObject, uint8_t *inData, uint32_t inDataNb)
 {
-	PDU_Operator_t *this = (PDU_Operator_t *)handlingObject;
+	DEV_PduOperator_t *this = (DEV_PduOperator_t *)handlingObject;
 
 	// Lock the queue to safely enqueue the incoming packet
 	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
@@ -139,18 +141,18 @@ void PDU_DataHandler(void *handlingObject, uint8_t *inData, uint32_t inDataNb)
 	if (LFQ_QueueAdd(&this->packetQueue, inData, inDataNb) == M_TRUE)
 	{
 		// Log if packet was rejected (queue full)
-		printf("warning: PDU_DataHandler packet rejected\n");
+		printf("warning: DEV_DataHandler packet rejected\n");
 		this->rejectedPacketsNo++;
 	}
 	//unlock the queue
 	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 
-// Execution thread for PDU
+// Execution thread for DEV
 // Waits for the start semaphore, processes packets, then signals completion
-ABOS_DEFINE_TASK(PDU_ExecuteThread)
+ABOS_DEFINE_TASK(DEV_ExecuteThread)
 {
-	PDU_Operator_t *this = (PDU_Operator_t *)param;
+	DEV_PduOperator_t *this = (DEV_PduOperator_t *)param;
 
 	while (this->isRunAgain == M_TRUE)
 	{
@@ -158,7 +160,7 @@ ABOS_DEFINE_TASK(PDU_ExecuteThread)
 		ABOS_SemaphoreWait(this->semaphoreStart, ABOS_TASK_MAX_DELAY);
 
 		// Run one cycle of the application
-		PDU_Execute(this);
+		DEV_Execute(this);
 
 		// Notify orchestrator that processing is complete
 		ABOS_SemaphorePost(this->semaphoreEnd);
