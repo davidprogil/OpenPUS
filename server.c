@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	// x print PUS TM
 	// x server responds
 	// - payloadApp
-	// 	- simulate uptime counter, reset
+	// 	- simulate pdu
 	// - application tutorial
 	// - document
 	// - publish

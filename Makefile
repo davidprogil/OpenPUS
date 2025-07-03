@@ -30,6 +30,7 @@ include ./server/core/core.mk
 # application
 include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
+include ./server/pduOperator/pduOperator.mk
 
 #------------------------------------------------------------------------------#							
 # compile server

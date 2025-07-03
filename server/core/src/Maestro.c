@@ -8,11 +8,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 /* application includes--------------------------------------------------------*/
-#include <CORE_Maestro.h>
+#include <LIB_PusUtils.h>
 
 /* component includes----------------------------------------------------------*/
-/* none */
+#include <CORE_Maestro.h>
 
 /* local macros ---------------------------------------------------------------*/
 /* none */

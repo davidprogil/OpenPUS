@@ -19,6 +19,7 @@
 //APID
 #define GROUND_APID (10)
 #define APP1_APID (1)
+#define PDU_APID (1)
 
 //Maestro
 #define CMAS_OVERRUNS_MAX_NO (5)
@@ -31,6 +32,9 @@
 
 #define APP1_THREAD_STACK_SIZE (0)
 #define APP1_THREAD_PRIORITY (0)
+
+#define PDU_THREAD_STACK_SIZE (0)
+#define PDU_THREAD_PRIORITY (0)
 
 #define SBRO_THREAD_STACK_SIZE (0)
 #define SBRO_THREAD_PRIORITY (0)
@@ -47,6 +51,8 @@
 #define SWBUS_TIME_LENGTH_MS (90)
 #define APP1_TIME_START_MS (110)
 #define APP1_TIME_LENGTH_MS (90)
+#define PDU_TIME_START_MS (210)
+#define PDU_TIME_LENGTH_MS (90)
 
 //SW BUS Configuration
 #define SBRO_TC_SUBSCRIBERS_MAX_NO (6)
@@ -64,6 +70,10 @@
 //Application 1
 #define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
 #define APP1_TC_MAX_NB (4)
+
+//PDU Operator
+#define PDU_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
+#define PDU_TC_MAX_NB (4)
 
 /* types------------------------------------------------------------------------*/
 /* none */
