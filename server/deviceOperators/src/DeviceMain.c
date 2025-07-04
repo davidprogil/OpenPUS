@@ -31,6 +31,9 @@
 // Main execution function for processing
 void DEV_Execute(DEV_DeviceMain_t *this);
 
+// Function to handle the TCs
+void DEV_HandleTcs(DEV_DeviceMain_t *this);
+
 // Thread definition macro for DEV execution
 ABOS_DEFINE_TASK(DEV_ExecuteThread);
 
@@ -59,6 +62,9 @@ void DEV_Init(DEV_DeviceMain_t *this, SBRO_Router_t *router,
 	ABOS_MutexCreate(&this->packetQueueMutex);
 	this->router = router;
 
+	//initialize sub-classes
+	DPDU_Init(&this->pdu);
+
 	// Subscribe to receive packets for this application's APID
 	SBRO_Subscribe(this->router, DEV_APID, this, *DEV_DataHandler);
 
@@ -81,9 +87,7 @@ void DEV_Stop(DEV_DeviceMain_t *this)
 
 
 /* local functions -----------------------------------------------------------*/
-// Main execution function for DEV
-// Processes all telecommands in the queue and sends back a response
-void DEV_Execute(DEV_DeviceMain_t *this)
+void DEV_HandleTcs(DEV_DeviceMain_t *this)
 {
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];  // Temporary buffer for one packet
 	uint16_t packetSize;
@@ -91,13 +95,11 @@ void DEV_Execute(DEV_DeviceMain_t *this)
 	uint8_t *packetData;
 	uint16_t processedTcNo = 0;
 
-	// Lock the queue for safe access
-	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
 
 	//printf("DEV_Execute\n");
 
 	// Process packets in the queue (up to a max number)
-	while ((LFQ_QueueGet(&this->packetQueue, packetBuffer, &packetSize)) &&
+	while ((LFQ_QueueGetWithMutex(&this->packetQueue, &this->packetQueueMutex, packetBuffer, &packetSize))  &&
 			(processedTcNo < DEV_TC_MAX_NB))
 	{
 		printf("DEV_DataHandler received packet:\n");
@@ -114,6 +116,7 @@ void DEV_Execute(DEV_DeviceMain_t *this)
 		}
 
 		// Modify packet to be telemetry instead of telecommand
+		packet->primaryHeader.secondaryHeader = M_FALSE;
 		packet->primaryHeader.packetType = CCSDS_PRIMARY_HEADER_IS_TM;
 
 		printf("DEV_DataHandler sending response:\n");
@@ -124,9 +127,15 @@ void DEV_Execute(DEV_DeviceMain_t *this)
 
 		processedTcNo++;
 	}
+}
 
-	// Unlock queue after processing
-	ABOS_MutexUnlock(&this->packetQueueMutex);
+// Main execution function for DEV
+// Processes all telecommands in the queue and sends back a response
+void DEV_Execute(DEV_DeviceMain_t *this)
+{
+	DEV_HandleTcs(this);
+
+	DPDU_Execute(&this->pdu);
 }
 
 // Called when a packet for DEV is received by the router

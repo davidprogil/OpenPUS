@@ -91,9 +91,12 @@ void APPX_Execute(APPX_AppXMain_t *this)
 	uint8_t *packetData;
 	uint16_t processedTcNo = 0;
 
+	//TODO put this in separate function handle TC or something
 	// Lock the queue for safe access
 	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
 
+
+	//TODO change to function that does the mutex inside
 	// Process packets in the queue (up to a max number)
 	while ((LFQ_QueueGet(&this->packetQueue, packetBuffer, &packetSize)) &&
 			(processedTcNo < APPX_TC_MAX_NB))

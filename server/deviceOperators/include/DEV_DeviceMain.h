@@ -17,7 +17,7 @@
 #include <SBRO_Router.h>    // Packet routing and publish/subscribe interfaces
 
 /* component includes----------------------------------------------------------*/
-/* none */
+#include <DEV_Pdu.h>
 
 /* macros-----------------------------------------------------------------------*/
 /* none */
@@ -42,6 +42,9 @@ typedef struct _DEV_DeviceMain_t_
 
 	// Execution control flag
 	bool_t isRunAgain;            // When false, terminates main thread loop
+
+	/*------------------- Sub-classes ------------------*/
+	DPDU_Pdu_t pdu;
 
 	/*----------- Data Exchange (Router + Queue) -------*/
 

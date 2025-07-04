@@ -19,7 +19,7 @@
 //APID
 #define GROUND_APID (10)
 #define APP1_APID (1)
-#define DEV_APID (1)
+#define DEV_APID (2)
 
 //Maestro
 #define CMAS_OVERRUNS_MAX_NO (5)

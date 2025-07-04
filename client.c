@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 						sizeof(packetBuffer), //targetNb
 						M_TRUE, //isTc
 						M_TRUE, //hasSecondaryHeader,
-						APP1_APID,//apid,
+						DEV_APID,//apid,
 						sequenceCount,
 						sizeof(tcPacketData),
 						tcPacketData) ==M_FALSE)
