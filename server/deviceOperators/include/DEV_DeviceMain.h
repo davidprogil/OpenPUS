@@ -4,8 +4,8 @@
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
 
-#ifndef DEV_PduOperator_H
-#define DEV_PduOperator_H
+#ifndef DEV_DeviceMain_H
+#define DEV_DeviceMain_H
 
 /* system includes-------------------------------------------------------------*/
 /* none */
@@ -24,7 +24,7 @@
 
 /* types------------------------------------------------------------------------*/
 // Main structure for DEV application logic and runtime context
-typedef struct _DEV_PduOperator_t_
+typedef struct _DEV_DeviceMain_t_
 {
 	// Handle for the DEV main execution thread
 	ABOS_thread_handle_t threadHandleExecute;
@@ -57,7 +57,7 @@ typedef struct _DEV_PduOperator_t_
 	// Mutex to protect access to the packet queue
 	ABOS_mutex_t packetQueueMutex;
 
-}DEV_PduOperator_t;
+}DEV_DeviceMain_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
@@ -71,15 +71,15 @@ typedef struct _DEV_PduOperator_t_
  * @param semaphoreStart Pointer to the start semaphore (provided by scheduler)
  * @param semaphoreEnd Pointer to the end semaphore (provided by scheduler)
  */
-void DEV_Init(DEV_PduOperator_t *this, SBRO_Router_t *router, ABOS_sem_handle_t *semaphoreStart, ABOS_sem_handle_t *semaphoreEnd);
+void DEV_Init(DEV_DeviceMain_t *this, SBRO_Router_t *router, ABOS_sem_handle_t *semaphoreStart, ABOS_sem_handle_t *semaphoreEnd);
 
 /**
  * @brief Stops DEV execution (sets the run flag to false).
  *
  * @param this Pointer to the DEV context structure
  */
-void DEV_Stop(DEV_PduOperator_t *this);
+void DEV_Stop(DEV_DeviceMain_t *this);
 
 /* end */
-#endif /* DEV_PduOperator_H */
+#endif /* DEV_DeviceMain_H */
 

@@ -109,7 +109,7 @@ void APP1_ExecuteTc(APP1_App1Main_t *this)
 	PUS_TcSecondaryHeader_t *tcHeader=NULL;
 	bool_t isTherePacket;
 
-
+	//printf("APP1_ExecuteTc \n");
 	// Process packets in the queue (up to a max number)
 	while ( (isTherePacket=LFQ_QueueGetWithMutex(&this->packetQueue, &this->packetQueueMutex, packetBuffer, &packetSize)) &&
 			(processedTcNo < APP1_TC_MAX_NB))

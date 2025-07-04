@@ -71,7 +71,7 @@
 #define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
 #define APP1_TC_MAX_NB (4)
 
-//PDU Operator
+//Device Operator
 #define DEV_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
 #define DEV_TC_MAX_NB (4)
 

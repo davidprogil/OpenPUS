@@ -31,6 +31,7 @@ uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={
 		DEV_TIME_START_MS};
 uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={
 		SWBUS_TIME_LENGTH_MS,
+		APP1_TIME_LENGTH_MS,
 		DEV_TIME_LENGTH_MS};
 
 /* local prototypes -----------------------------------------------------------*/
@@ -101,7 +102,7 @@ void CMAS_Init(CMAS_Maestro_t *this)
 		sIx+=2;
 		APP1_Init(&this->proc1,&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
 		sIx+=2;
-		DEV_Init(&this->pduOperator,&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
+		DEV_Init(&this->deviceMain,&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
 		sIx+=2;
 
 		this->isRunAgain=M_TRUE;
@@ -134,7 +135,7 @@ void CMAS_Stop(CMAS_Maestro_t *this)
 	this->isRunAgain=M_FALSE;
 	SBRO_Stop(&this->swBus);
 	APP1_Stop(&this->proc1);
-	DEV_Stop(&this->pduOperator);
+	DEV_Stop(&this->deviceMain);
 }
 
 /* local functions ------------------------------------------------------------*/
@@ -164,7 +165,7 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 		if (ABOS_SEMAPHORE_OK!=waitResult)
 		{
 			//printf("CMAS_Execute 6\n");
-			printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[appIx*2],&this->semaphores[appIx*2+1]);
+			printf("* * * Task Index: %d Problem * * * %p %p\r\n",appIx,&this->semaphores[appIx*2],&this->semaphores[appIx*2+1]);
 			/*monitored*/
 			this->overrunsCounter[appIx]++;
 			/*monitored*/

@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include <DEV_PduOperator.h>
+#include "../include/DEV_DeviceMain.h"
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -29,7 +29,7 @@
 
 /* local prototypes -----------------------------------------------------------*/
 // Main execution function for processing
-void DEV_Execute(DEV_PduOperator_t *this);
+void DEV_Execute(DEV_DeviceMain_t *this);
 
 // Thread definition macro for DEV execution
 ABOS_DEFINE_TASK(DEV_ExecuteThread);
@@ -39,7 +39,7 @@ void DEV_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
 
 /* public functions -----------------------------------------------------------*/
 // Initializes the DEV application
-void DEV_Init(DEV_PduOperator_t *this, SBRO_Router_t *router,
+void DEV_Init(DEV_DeviceMain_t *this, SBRO_Router_t *router,
 		ABOS_sem_handle_t *semaphoreStart, ABOS_sem_handle_t *semaphoreEnd)
 {
 	printf("DEV_Init\n");
@@ -74,7 +74,7 @@ void DEV_Init(DEV_PduOperator_t *this, SBRO_Router_t *router,
 }
 
 // Stops the application by exiting the execution loop
-void DEV_Stop(DEV_PduOperator_t *this)
+void DEV_Stop(DEV_DeviceMain_t *this)
 {
 	this->isRunAgain = M_FALSE;
 }
@@ -83,7 +83,7 @@ void DEV_Stop(DEV_PduOperator_t *this)
 /* local functions -----------------------------------------------------------*/
 // Main execution function for DEV
 // Processes all telecommands in the queue and sends back a response
-void DEV_Execute(DEV_PduOperator_t *this)
+void DEV_Execute(DEV_DeviceMain_t *this)
 {
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];  // Temporary buffer for one packet
 	uint16_t packetSize;
@@ -132,7 +132,7 @@ void DEV_Execute(DEV_PduOperator_t *this)
 // Called when a packet for DEV is received by the router
 void DEV_DataHandler(void *handlingObject, uint8_t *inData, uint32_t inDataNb)
 {
-	DEV_PduOperator_t *this = (DEV_PduOperator_t *)handlingObject;
+	DEV_DeviceMain_t *this = (DEV_DeviceMain_t *)handlingObject;
 
 	// Lock the queue to safely enqueue the incoming packet
 	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
@@ -152,7 +152,7 @@ void DEV_DataHandler(void *handlingObject, uint8_t *inData, uint32_t inDataNb)
 // Waits for the start semaphore, processes packets, then signals completion
 ABOS_DEFINE_TASK(DEV_ExecuteThread)
 {
-	DEV_PduOperator_t *this = (DEV_PduOperator_t *)param;
+	DEV_DeviceMain_t *this = (DEV_DeviceMain_t *)param;
 
 	while (this->isRunAgain == M_TRUE)
 	{
