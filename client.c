@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 					sizeof(dummyDataToSend),//uint16_t dataNb
 					M_FALSE,//bool_t isWantedAcknowledgment
 					M_FALSE,//bool_t isWantedExecutionResul
-					17,//uint8_t serviceType
+					140/*17*/,//uint8_t serviceType
 					1,//uint8_t serviceSubType
 					GROUND_APID);//uint16_t sourceId
 

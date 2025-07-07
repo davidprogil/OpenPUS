@@ -251,6 +251,25 @@ void PUS_PrintTm(uint8_t *packet, uint16_t packetNb)
 
 }
 
+//note, PUS_IsPacketSizeValid needs to be called before
+bool_t PUS_IsPusPusTc(uint8_t *packet, uint16_t packetNb)
+{
+	bool_t isValid=M_TRUE;
+	CCSDS_Packet_t *packetStructured = (CCSDS_Packet_t *)packet;
+
+	if (packetStructured->primaryHeader.packetType!=CCSDS_PRIMARY_HEADER_IS_TC)
+	{
+		isValid=M_FALSE;
+	}
+
+	if (packetStructured->primaryHeader.secondaryHeader==M_FALSE)
+	{
+		isValid=M_FALSE;
+	}
+
+	return isValid;
+}
+
 bool_t PUS_IsPacketSizeValid(uint8_t *packet, uint16_t packetNb)
 {
 	bool_t isValid=M_TRUE;

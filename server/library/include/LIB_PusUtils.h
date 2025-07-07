@@ -77,7 +77,7 @@ void PUS_PrintTm(uint8_t *packet, uint16_t packetNb);
 
 //validators
 bool_t PUS_IsPacketSizeValid(uint8_t *packet, uint16_t packetNb);
-
+bool_t PUS_IsPusPusTc(uint8_t *packet, uint16_t packetNb);
 //management
 void PUS_SetTmTimeStamp(uint32_t timeStamp);
 

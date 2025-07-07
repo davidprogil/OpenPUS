@@ -16,12 +16,12 @@ PDU_OBJ_SRC_PATH=$(PDU_OBJ_PATH)/src
 # used includes
 PDU_INCLUDES_PATHS=$(sort	-I$(PDU_OBJ_INCLUDE_PATH) \
 									$(COMMON_INCLUDES_PATHS) \
-									$(SOMETHING_INCLUDES_PATHS))
+									$(CCSDSUTILS_INCLUDES_PATHS))
 
 PDU_INCLUDES=$(sort	$(PDU_OBJ_INCLUDE_PATH)/DEV_$(PDU_OBJ_NAME).h \
 									$(PDU_OBJ_PATH)/$(PDU_OBJ_NAME).mk \
 									$(COMMON_INCLUDES) \
-									$(SOMETHING_INCLUDES))
+									$(CCSDSUTILS_INCLUDES))
 
 
 #------------------------------------------------------------------------------#

@@ -9,10 +9,10 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include "../include/DEV_DeviceMain.h"
+#include <LIB_PusUtils.h>
 
 /* component includes----------------------------------------------------------*/
-/* none */
+#include <DEV_DeviceMain.h>
 
 /* local macros ---------------------------------------------------------------*/
 /* none */
@@ -92,7 +92,8 @@ void DEV_HandleTcs(DEV_DeviceMain_t *this)
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];  // Temporary buffer for one packet
 	uint16_t packetSize;
 	CCSDS_Packet_t *packet;
-	uint8_t *packetData;
+	PUS_TcSecondaryHeader_t *tcSecondaryHeader;
+	//TODO remove uint8_t *packetData;
 	uint16_t processedTcNo = 0;
 
 
@@ -107,23 +108,21 @@ void DEV_HandleTcs(DEV_DeviceMain_t *this)
 		packet = (CCSDS_Packet_t *)packetBuffer;
 		CCSDS_PrintPacket(packet);
 
-		if (packetSize >= sizeof(CCSDS_PrimaryHeader_t) + 2)
+		//if pus packet
+		if (PUS_IsPacketSizeValid(packetBuffer, packetSize))
 		{
-			// Simple transformation: multiply data by 2
-			packetData = &packet->data;
-			packetData[0] *=2;
-			packetData[1] *=2;
+			//if TC
+			if (PUS_IsPusPusTc(packetBuffer, packetSize))
+			{
+				tcSecondaryHeader=PUS_GetTcHeader(packetBuffer, packetSize);
+				//if for PDU
+				if (tcSecondaryHeader->serviceType==DPDU_PUS_SERVICE_ID)
+				{
+					DPDU_HandleTc(packetBuffer, packetSize);
+				}
+			}
 		}
 
-		// Modify packet to be telemetry instead of telecommand
-		packet->primaryHeader.secondaryHeader = M_FALSE;
-		packet->primaryHeader.packetType = CCSDS_PRIMARY_HEADER_IS_TM;
-
-		printf("DEV_DataHandler sending response:\n");
-		CCSDS_PrintPacket(packet);
-
-		// Publish response packet back to the router
-		SBRO_Publish(this->router, packetBuffer, packetSize);
 
 		processedTcNo++;
 	}
