@@ -63,7 +63,7 @@ void DEV_Init(DEV_DeviceMain_t *this, SBRO_Router_t *router,
 	this->router = router;
 
 	//initialize sub-classes
-	DPDU_Init(&this->pdu);
+	DPDU_Init(&this->pdu,&this->sentPacketsNo);
 
 	// Subscribe to receive packets for this application's APID
 	SBRO_Subscribe(this->router, DEV_APID, this, *DEV_DataHandler);
@@ -118,7 +118,7 @@ void DEV_HandleTcs(DEV_DeviceMain_t *this)
 				//if for PDU
 				if (tcSecondaryHeader->serviceType==DPDU_PUS_SERVICE_ID)
 				{
-					DPDU_HandleTc(packetBuffer, packetSize);
+					DPDU_HandleTc(&this->pdu,packetBuffer, packetSize);
 				}
 			}
 		}

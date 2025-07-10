@@ -35,6 +35,9 @@ typedef struct _DPDU_Pdu_t_
 {
 	DPDU_Channel_t channels[DPDU_CHANNELS_NO];
 	float32_t batteryLevel;
+
+	//status
+	uint16_t *pidMsgCounter;
 }DPDU_Pdu_t;
 
 typedef struct _DPDU_TcChannelOnOff_t_
@@ -43,7 +46,7 @@ typedef struct _DPDU_TcChannelOnOff_t_
 	uint8_t isOn;
 }DPDU_TcChannelOnOff_t;
 
-typedef struct _DPDU_TmChannel_t_
+typedef struct _DPDU_TmPduStatus_t_
 {
 	uint32_t batteryLevel;
 	uint8_t ch1isOn;
@@ -58,16 +61,16 @@ typedef struct _DPDU_TmChannel_t_
 	uint8_t ch4isOn;
 	uint8_t ch4v;
 	uint8_t ch4ma;
-}DPDU_TmChannel_t;
+}DPDU_TmPduStatus_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void DPDU_Init(DPDU_Pdu_t *this);
+void DPDU_Init(DPDU_Pdu_t *this,uint16_t *pidMsgCounter_p);
 void DPDU_Execute(DPDU_Pdu_t *this);
 
-void DPDU_HandleTc(uint8_t *packetBuffer,uint16_t packetSize);
+void DPDU_HandleTc(DPDU_Pdu_t *this,uint8_t *packetBuffer,uint16_t packetSize);
 
 
 /* end */

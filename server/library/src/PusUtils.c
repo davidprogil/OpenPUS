@@ -159,7 +159,10 @@ bool_t PUS_JoinTcHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TcSecond
 	else
 	{
 		memcpy(&target[0],header,sizeof(PUS_TcSecondaryHeader_t));
-		memcpy(&target[sizeof(PUS_TcSecondaryHeader_t)],data,dataNb);
+		if (dataNb!=0)
+		{
+			memcpy(&target[sizeof(PUS_TcSecondaryHeader_t)],data,dataNb);
+		}
 	}
 
 	return isError;

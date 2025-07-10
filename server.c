@@ -48,22 +48,23 @@ int main(int argc, char *argv[])
 	// x - print PUS TC
 	// x print PUS TM
 	// x server responds
-	// - payloadApp
-	// 	- simulate pdu
+	// x - payloadApp
+	// 	x - simulate pdu
+	//  - handle on/off requests
+	//  - handle status requests
+	//  - client prints status requests
+	// - fix TODOs
 	// - application tutorial
 	// - document
 	// - publish
-	// - services component
-	// - service 17
-	// - publish
-	// - service 17,3
-	// - packet validators
+	// - service 1
 	// - packet encoders
 	// - packet decoders
-	// - service 1
 	// - publish
 	// - packets data model
 	// - issue code generation
+	// - service 17
+	// - publish
 	// - service 3
 	// - publish
 	// - service 5

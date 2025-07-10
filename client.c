@@ -37,6 +37,7 @@ ABDL_DataLink_t dataLink;
 uint16_t sequenceCount=0;
 bool_t isRunAgain=M_TRUE;
 uint32_t upTime=0;
+uint32_t upTimeSub=0;
 
 /* local prototypes -----------------------------------------------------------*/
 /* none */
@@ -69,32 +70,53 @@ int main(int argc, char *argv[])
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
 	uint16_t receivedNb;
 	uint8_t tcPacketData[sizeof(PUS_TcSecondaryHeader_t)+2];
+	uint64_t dataSize;
 	bool_t isError=M_FALSE;
+	uint8_t channelIx=0;
 	while (isRunAgain==M_TRUE)
 	{
 
 		printf("client %d\n",upTime);
 
 		//send packets
-		if ((upTime>0)&&(upTime%5==0))
+		if ((upTimeSub==5)||(upTimeSub==10)||(upTimeSub==15)||(upTimeSub==20)||(upTimeSub==25))
 		{
 			printf("time to send packet\n");
 			//data
-			uint8_t dummyDataToSend[2] = {sequenceCount+3,sequenceCount+4};
+			uint8_t dummyDataToSend[2] = {channelIx++,1};
+			if (channelIx==4) channelIx=0;
 
-			isError=PUS_CreateTcDataField(
-					tcPacketData,//uint8_t *target
-					sizeof(tcPacketData),//uint16_t targetMaxNb
-					dummyDataToSend,//uint8_t *data
-					sizeof(dummyDataToSend),//uint16_t dataNb
-					M_FALSE,//bool_t isWantedAcknowledgment
-					M_FALSE,//bool_t isWantedExecutionResul
-					140/*17*/,//uint8_t serviceType
-					1,//uint8_t serviceSubType
-					GROUND_APID);//uint16_t sourceId
+			if (upTimeSub!=25)
+			{
+				dataSize=sizeof(PUS_TcSecondaryHeader_t)+2;
+				isError=PUS_CreateTcDataField(
+						tcPacketData,//uint8_t *target
+						sizeof(tcPacketData),//uint16_t targetMaxNb
+						dummyDataToSend,//uint8_t *data
+						sizeof(dummyDataToSend),//uint16_t dataNb
+						M_FALSE,//bool_t isWantedAcknowledgment
+						M_FALSE,//bool_t isWantedExecutionResul
+						140/*17*/,//uint8_t serviceType
+						1,//uint8_t serviceSubType
+						GROUND_APID);//uint16_t sourceId
+
+			}
+			else //instead of switching channels request status
+			{
+				dataSize=sizeof(PUS_TcSecondaryHeader_t);
+				isError=PUS_CreateTcDataField(
+						tcPacketData,//uint8_t *target
+						sizeof(tcPacketData),//uint16_t targetMaxNb
+						NULL,//uint8_t *data
+						0,//uint16_t dataNb
+						M_FALSE,//bool_t isWantedAcknowledgment
+						M_FALSE,//bool_t isWantedExecutionResul
+						140/*17*/,//uint8_t serviceType
+						2,//uint8_t serviceSubType
+						GROUND_APID);//uint16_t sourceId
+			}
 
 			if(M_FALSE==isError)
-
 			{
 				//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
 
@@ -105,7 +127,7 @@ int main(int argc, char *argv[])
 						M_TRUE, //hasSecondaryHeader,
 						DEV_APID,//apid,
 						sequenceCount,
-						sizeof(tcPacketData),
+						dataSize,
 						tcPacketData) ==M_FALSE)
 				{
 
@@ -138,6 +160,8 @@ int main(int argc, char *argv[])
 		//wait
 		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
 		upTime++;
+		upTimeSub++;
+		if (upTimeSub==30) upTimeSub=0;
 
 	}
 	//wait for all tasks to stop hopefully
