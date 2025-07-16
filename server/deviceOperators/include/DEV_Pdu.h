@@ -12,6 +12,7 @@
 
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
+#include <SBRO_Router.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -36,10 +37,14 @@ typedef struct _DPDU_Pdu_t_
 	DPDU_Channel_t channels[DPDU_CHANNELS_NO];
 	float32_t batteryLevel;
 
+	//utils
+	SBRO_Router_t *router;
 	//status
 	uint16_t *pidMsgCounter;
+	uint16_t pduStatusTmCounter;
 }DPDU_Pdu_t;
 
+//data for packets
 typedef struct _DPDU_TcChannelOnOff_t_
 {
 	uint8_t channelNo;
@@ -48,26 +53,26 @@ typedef struct _DPDU_TcChannelOnOff_t_
 
 typedef struct _DPDU_TmPduStatus_t_
 {
-	uint32_t batteryLevel;
+	float32_t batteryLevel;
 	uint8_t ch1isOn;
-	uint8_t ch1v;
-	uint8_t ch1ma;
+	float32_t ch1v;
+	float32_t ch1ma;
 	uint8_t ch2isOn;
-	uint8_t ch2v;
-	uint8_t ch2ma;
+	float32_t ch2v;
+	float32_t ch2ma;
 	uint8_t ch3isOn;
-	uint8_t ch3v;
-	uint8_t ch3ma;
+	float32_t ch3v;
+	float32_t ch3ma;
 	uint8_t ch4isOn;
-	uint8_t ch4v;
-	uint8_t ch4ma;
+	float32_t ch4v;
+	float32_t ch4ma;
 }DPDU_TmPduStatus_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void DPDU_Init(DPDU_Pdu_t *this,uint16_t *pidMsgCounter_p);
+void DPDU_Init(DPDU_Pdu_t *this,uint16_t *pidMsgCounter_p,SBRO_Router_t *router_p);
 void DPDU_Execute(DPDU_Pdu_t *this);
 
 void DPDU_HandleTc(DPDU_Pdu_t *this,uint8_t *packetBuffer,uint16_t packetSize);

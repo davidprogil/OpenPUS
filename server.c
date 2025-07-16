@@ -50,9 +50,9 @@ int main(int argc, char *argv[])
 	// x server responds
 	// x - payloadApp
 	// 	x - simulate pdu
-	//  - handle on/off requests
-	//  - handle status requests
-	//  - client prints status requests
+	//  x - handle on/off requests
+	//  x - handle status requests
+	//  x - client prints status requests
 	// - fix TODOs
 	// - application tutorial
 	// - document

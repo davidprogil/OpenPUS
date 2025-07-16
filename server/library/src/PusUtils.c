@@ -111,17 +111,50 @@ PUS_TcSecondaryHeader_t *PUS_GetTcHeader(uint8_t *packetBuffer,uint16_t packetNb
 		}
 		else
 		{
-			printf("warning: APP1_DataHandler received non PUS packet\n");
+			printf("warning: PUS_GetTcHeader received non PUS packet\n");
 		}
 	}
 
 	return tcHeader;
 }
 
+PUS_TmSecondaryHeader_t *PUS_GetTmHeader(uint8_t *packetBuffer,uint16_t packetNb)
+{
+	CCSDS_Packet_t *packet = (CCSDS_Packet_t *)packetBuffer;
+	PUS_TmSecondaryHeader_t *tmHeader=NULL;
+	if (packet->primaryHeader.secondaryHeader==M_FALSE)
+	{
+		printf("warning: APP1_DataHandler received non PUS packet\n");
+	}
+	else
+	{
+		//validate
+		if (PUS_IS_TM_HEADER_SIZE(packet))
+		{
+			//map tcHeader
+			tmHeader=(PUS_TmSecondaryHeader_t *)&packetBuffer[sizeof(CCSDS_PrimaryHeader_t)];
+		}
+		else
+		{
+			printf("warning: PUS_GetTmHeader received non PUS packet\n");
+		}
+	}
+
+	return tmHeader;
+}
+
 uint8_t *PUS_GetTcDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDataLength)
 {
 	uint8_t *dataPointer=&packet[sizeof(CCSDS_PrimaryHeader_t)+sizeof(PUS_TcSecondaryHeader_t)];
 	*dataSize=pusDataLength-sizeof(PUS_TcSecondaryHeader_t);
+
+	return dataPointer;
+}
+
+uint8_t *PUS_GetTmDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDataLength)
+{
+	uint8_t *dataPointer=&packet[sizeof(CCSDS_PrimaryHeader_t)+sizeof(PUS_TmSecondaryHeader_t)];
+	*dataSize=pusDataLength-sizeof(PUS_TmSecondaryHeader_t);
 
 	return dataPointer;
 }

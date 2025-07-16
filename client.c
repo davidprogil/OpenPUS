@@ -26,7 +26,22 @@
 #define MAIN_INFINITE_CYCLE_PERIOD_MS (1000)
 
 /* local types ----------------------------------------------------------------*/
-/* none */
+typedef struct _DPDU_TmPduStatus_t_
+{
+	float32_t batteryLevel;
+	uint8_t ch1isOn;
+	float32_t ch1v;
+	float32_t ch1ma;
+	uint8_t ch2isOn;
+	float32_t ch2v;
+	float32_t ch2ma;
+	uint8_t ch3isOn;
+	float32_t ch3v;
+	float32_t ch3ma;
+	uint8_t ch4isOn;
+	float32_t ch4v;
+	float32_t ch4ma;
+}DPDU_TmPduStatus_t;
 
 /* public variables -----------------------------------------------------------*/
 /* none */
@@ -96,8 +111,8 @@ int main(int argc, char *argv[])
 						sizeof(dummyDataToSend),//uint16_t dataNb
 						M_FALSE,//bool_t isWantedAcknowledgment
 						M_FALSE,//bool_t isWantedExecutionResul
-						140/*17*/,//uint8_t serviceType
-						1,//uint8_t serviceSubType
+						140/*17*/,//uint8_t serviceType //TODO magic number
+						1,//uint8_t serviceSubType //TODO magic number
 						GROUND_APID);//uint16_t sourceId
 
 			}
@@ -155,6 +170,46 @@ int main(int argc, char *argv[])
 		{
 			//CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
 			PUS_PrintPacket(packetBuffer,sizeof(packetBuffer));
+			CCSDS_Packet_t *packet = (CCSDS_Packet_t *)packetBuffer;
+			PUS_TmSecondaryHeader_t *tmHeader=PUS_GetTmHeader(packetBuffer,receivedNb);
+			if (tmHeader!=NULL)
+			{
+				if ((tmHeader->serviceType==140) && (tmHeader->serviceSubType==3))//TODO magic numbers
+				{
+					DPDU_TmPduStatus_t *pduStatus;
+					uint16_t packetDataSize;
+					pduStatus=(DPDU_TmPduStatus_t*)PUS_GetTmDataPointer(&packetDataSize,packetBuffer,packet->primaryHeader.dataLength);
+					printf("pdu status telemetry:\n");
+					//float32_t batteryLevel;
+					printf("\t batteryLevel: %f \n",pduStatus->batteryLevel);
+					//uint8_t ch1isOn;
+					printf("\t ch1: %d %f v %f ma \n",pduStatus->ch1isOn, pduStatus->ch1v, pduStatus->ch1ma);
+					//float32_t ch1v;
+					//float32_t ch1ma;
+					//uint8_t ch2isOn;
+					printf("\t ch1: %d %f v %f ma \n",pduStatus->ch2isOn, pduStatus->ch2v, pduStatus->ch2ma);
+					//float32_t ch2v;
+					//float32_t ch2ma;
+					//uint8_t ch3isOn;
+					printf("\t ch3: %d %f v %f ma \n",pduStatus->ch3isOn, pduStatus->ch3v, pduStatus->ch3ma);
+					//float32_t ch3v;
+					//float32_t ch3ma;
+					//uint8_t ch4isOn;
+					printf("\t ch4: %d %f v %f ma \n",pduStatus->ch4isOn, pduStatus->ch4v, pduStatus->ch4ma);
+					//float32_t ch4v;
+					//float32_t ch4ma;
+
+				}
+				else
+				{
+					printf("warning: received unknown telemetry\n");
+				}
+
+			}
+			else
+			{
+				printf("warning: received invalid telemetry\n");
+			}
 		}
 
 		//wait

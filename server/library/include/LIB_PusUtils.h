@@ -19,7 +19,9 @@
 /* macros-----------------------------------------------------------------------*/
 #define PUS_VERSION_NO (1)
 #define PUS_IS_TC_HEADER_SIZE(x) (CCSDS_PACKET_DATA_LENGHT(x)>=sizeof(PUS_TcSecondaryHeader_t)?M_TRUE:M_FALSE)
+#define PUS_IS_TM_HEADER_SIZE(x) (CCSDS_PACKET_DATA_LENGHT(x)>=sizeof(PUS_TmSecondaryHeader_t)?M_TRUE:M_FALSE)
 #define PUS_GET_TC_DATA_SIZE(x) ((x)->primaryHeader.dataLength-sizeof(PUS_TcSecondaryHeader_t))
+#define PUS_GET_TM_DATA_SIZE(x) ((x)->primaryHeader.dataLength-sizeof(PUS_TmSecondaryHeader_t))
 
 /* types------------------------------------------------------------------------*/
 typedef struct __attribute__((packed)) _PUS_TmSecondaryHeader_t_
@@ -64,9 +66,11 @@ bool_t PUS_JoinTmHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TmSecond
 
 //header getter
 PUS_TcSecondaryHeader_t *PUS_GetTcHeader(uint8_t *packet,uint16_t packetNb);
+PUS_TmSecondaryHeader_t *PUS_GetTmHeader(uint8_t *packet,uint16_t packetNb);
 
 //data getters
 uint8_t *PUS_GetTcDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDataLength);
+uint8_t *PUS_GetTmDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDataLength);
 
 //printers
 void PUS_PrintTcHeader(PUS_TcSecondaryHeader_t *self);

@@ -63,7 +63,7 @@ void DEV_Init(DEV_DeviceMain_t *this, SBRO_Router_t *router,
 	this->router = router;
 
 	//initialize sub-classes
-	DPDU_Init(&this->pdu,&this->sentPacketsNo);
+	DPDU_Init(&this->pdu,&this->sentPacketsNo,router);
 
 	// Subscribe to receive packets for this application's APID
 	SBRO_Subscribe(this->router, DEV_APID, this, *DEV_DataHandler);

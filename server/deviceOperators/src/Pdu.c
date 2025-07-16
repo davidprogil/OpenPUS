@@ -54,7 +54,7 @@ float32_t channelsCurrentsDefault[DPDU_CHANNELS_NO] =
 void DPDU_CreateTmAndSend(DPDU_Pdu_t *this,uint8_t *data,uint16_t dataNb,uint16_t destinationId);
 
 /* public functions -----------------------------------------------------------*/
-void DPDU_Init(DPDU_Pdu_t *this,uint16_t *pidMsgCounter_p)
+void DPDU_Init(DPDU_Pdu_t *this,uint16_t *pidMsgCounter_p,SBRO_Router_t *router_p)
 {
 	printf("DPDU_Init\n");
 	memset(this,0,sizeof(DPDU_Pdu_t));
@@ -68,8 +68,11 @@ void DPDU_Init(DPDU_Pdu_t *this,uint16_t *pidMsgCounter_p)
 		this->channels[channelIx].voltage_v=0.0;
 		this->channels[channelIx].current_mA=0.0;
 	}
+	//utils
+	this->router=router_p;
 	//status
 	this->pidMsgCounter=pidMsgCounter_p;
+	this->pduStatusTmCounter=0;
 }
 
 void DPDU_Execute(DPDU_Pdu_t *this)
@@ -150,8 +153,8 @@ void DPDU_CreateTmAndSend(DPDU_Pdu_t *this,uint8_t *data,uint16_t dataNb,uint16_
 		isError=PUS_CreateTmDataField(
 				&packetBuffer[CCSDS_PACKET_START_DATA],sizeof(packetBuffer)-sizeof(CCSDS_PrimaryHeader_t), //target and size
 				data,dataNb, //data
-				17, 2, //service, subservice
-				this->messageType17s2Counter,
+				DPDU_PUS_SERVICE_ID, DPDU_PUS_CHANNELSTATUS_TM_SUBSERVICE_ID, //service, subservice
+				this->pduStatusTmCounter,
 				destinationId);
 	}
 
@@ -175,8 +178,8 @@ void DPDU_CreateTmAndSend(DPDU_Pdu_t *this,uint8_t *data,uint16_t dataNb,uint16_
 		PUS_PrintTm(packetBuffer, sizeof(packetBuffer));
 		//print TC
 		SBRO_Publish(this->router, packetBuffer, CCSDS_PACKET_TOTAL_LENGHT((CCSDS_Packet_t*)packetBuffer));//temp
-		this->messageType17s2Counter++;
-		*this->pidMsgCounter++;
+		this->pduStatusTmCounter++;
+		(*this->pidMsgCounter)++;
 	}
 }
 
