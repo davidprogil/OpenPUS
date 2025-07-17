@@ -25,6 +25,11 @@
 /* local macros ---------------------------------------------------------------*/
 #define MAIN_INFINITE_CYCLE_PERIOD_MS (1000)
 
+#define DPDU_PUS_SERVICE_ID (140)
+#define DPDU_PUS_CHANNELONOFF_TC_SUBSERVICE_ID (1)
+#define DPDU_PUS_CHANNELSTATUS_TC_SUBSERVICE_ID (2)
+#define DPDU_PUS_CHANNELSTATUS_TM_SUBSERVICE_ID (3)
+
 /* local types ----------------------------------------------------------------*/
 typedef struct _DPDU_TmPduStatus_t_
 {
@@ -111,8 +116,8 @@ int main(int argc, char *argv[])
 						sizeof(dummyDataToSend),//uint16_t dataNb
 						M_FALSE,//bool_t isWantedAcknowledgment
 						M_FALSE,//bool_t isWantedExecutionResul
-						140/*17*/,//uint8_t serviceType //TODO magic number
-						1,//uint8_t serviceSubType //TODO magic number
+						DPDU_PUS_SERVICE_ID/*17*/,//uint8_t serviceType
+						DPDU_PUS_CHANNELONOFF_TC_SUBSERVICE_ID,//uint8_t serviceSubType
 						GROUND_APID);//uint16_t sourceId
 
 			}
@@ -126,8 +131,8 @@ int main(int argc, char *argv[])
 						0,//uint16_t dataNb
 						M_FALSE,//bool_t isWantedAcknowledgment
 						M_FALSE,//bool_t isWantedExecutionResul
-						140/*17*/,//uint8_t serviceType
-						2,//uint8_t serviceSubType
+						DPDU_PUS_SERVICE_ID/*17*/,//uint8_t serviceType
+						DPDU_PUS_CHANNELSTATUS_TC_SUBSERVICE_ID,//uint8_t serviceSubType
 						GROUND_APID);//uint16_t sourceId
 			}
 
@@ -174,7 +179,7 @@ int main(int argc, char *argv[])
 			PUS_TmSecondaryHeader_t *tmHeader=PUS_GetTmHeader(packetBuffer,receivedNb);
 			if (tmHeader!=NULL)
 			{
-				if ((tmHeader->serviceType==140) && (tmHeader->serviceSubType==3))//TODO magic numbers
+				if ((tmHeader->serviceType==DPDU_PUS_SERVICE_ID) && (tmHeader->serviceSubType==DPDU_PUS_CHANNELSTATUS_TM_SUBSERVICE_ID))
 				{
 					DPDU_TmPduStatus_t *pduStatus;
 					uint16_t packetDataSize;

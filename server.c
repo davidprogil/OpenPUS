@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	//  x - handle on/off requests
 	//  x - handle status requests
 	//  x - client prints status requests
-	// - fix TODOs
+	// x - fix TODOs
 	// - application tutorial
 	// - document
 	// - publish

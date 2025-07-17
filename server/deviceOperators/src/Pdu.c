@@ -135,7 +135,6 @@ void DPDU_HandleTc(DPDU_Pdu_t *this,uint8_t *packetBuffer,uint16_t packetSize)
 	}
 	else
 	{
-		//TODO
 		printf("warning: DPDU_HandleTc unknown subservice\n");
 	}
 }

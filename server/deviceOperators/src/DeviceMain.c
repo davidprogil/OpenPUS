@@ -93,7 +93,6 @@ void DEV_HandleTcs(DEV_DeviceMain_t *this)
 	uint16_t packetSize;
 	CCSDS_Packet_t *packet;
 	PUS_TcSecondaryHeader_t *tcSecondaryHeader;
-	//TODO remove uint8_t *packetData;
 	uint16_t processedTcNo = 0;
 
 
