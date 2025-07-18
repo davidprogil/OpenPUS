@@ -54,12 +54,12 @@ int main(int argc, char *argv[])
 	//  x - handle status requests
 	//  x - client prints status requests
 	// x - fix TODOs
-	// - application tutorial
-	// - document
+	// x - document
 	// - publish
 	// - service 1
 	// - packet encoders
 	// - packet decoders
+	// - application tutorial
 	// - publish
 	// - packets data model
 	// - issue code generation
