@@ -44,13 +44,28 @@ void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer)
 		receivePort=4164;
 		sendPort=4163;
 	}
-	ABDL_InitSocket(&this->receiveSocket,"127.0.0.1",receivePort);
+	//receive socket
+	if (isServer)
+	{
+		ABDL_InitSocket(&this->receiveSocket,ABDL_SERVER_IP,receivePort);
+	}
+	else
+	{
+		ABDL_InitSocket(&this->receiveSocket,ABDL_CLIENT_IP,receivePort);
+	}
 	if (bind(this->receiveSocket.sockfd, (struct sockaddr*)&this->receiveSocket.servaddr, sizeof(this->receiveSocket.servaddr))==ERROR)
 	{
 		printf("warning: ABDL_Init could not bind receive socket on port %d\n",receivePort);
 	}
-	ABDL_InitSocket(&this->sendSocket,"127.0.0.1",sendPort);
-
+	//send socket
+	if (isServer)
+	{
+		ABDL_InitSocket(&this->sendSocket,ABDL_CLIENT_IP,sendPort);
+	}
+	else
+	{
+		ABDL_InitSocket(&this->sendSocket,ABDL_SERVER_IP,sendPort);
+	}
 	this->isRunAgain=M_TRUE;
 
 	//received queue

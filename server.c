@@ -57,6 +57,10 @@ int main(int argc, char *argv[])
 	// x - document
 	// - publish
 	// - service 1
+	//		- tm 1,1 - suc acceptance verification report
+	//		- tm 1,2 - failed acceptance verification report
+	//		- tm 1,7 - suc completition of execution verification report
+	//		- tm 1,8 - failed completion of execution verification report
 	// - packet encoders
 	// - packet decoders
 	// - application tutorial

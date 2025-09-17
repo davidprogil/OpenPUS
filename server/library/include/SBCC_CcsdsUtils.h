@@ -28,6 +28,11 @@
 #define CCSDS_PACKET_START_DATA (sizeof(CCSDS_PrimaryHeader_t))
 
 /* types------------------------------------------------------------------------*/
+typedef struct __attribute__((packed)) _CCSDS_RequestId_t_
+{
+
+}CCSDS_RequestId_t;
+
 /*CCSDS-PUS ECSS-E-ST-70-41C15April2016-PUS
 -- packet primary header
 3 bits: version number : 0 CCSDS 133.0-B-1

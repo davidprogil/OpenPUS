@@ -13,7 +13,7 @@ COMMON_INCLUDES_PATHS=-I$(PROJECT_PATH)/server/include
 #--------------------------------------------------------------------------------
 # project set-up
 CC=gcc
-CFLAGS=-Wall -c -fpic -fopenmp
+CFLAGS=-Wall -c -fpic 
 LDFLAGS=-Wall 
 AR=ar
 TARGET=$(shell uname -m)
@@ -26,7 +26,7 @@ include ./server/library/library.mk
 # core
 include ./server/core/core.mk
 # mission
-# none
+include ./server/packets/packets.mk
 # application
 include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
@@ -40,7 +40,8 @@ SERVER_COMPONENT_OBJ=	$(CORE_COMPONENT_OBJ) \
 						$(APPLICATION1_COMPONENT_OBJ) \
 						$(SWBUS_COMPONENT_OBJ) \
 						$(LIBRARY_COMPONENT_OBJ)\
-						$(DEVICEOPERATORS_COMPONENT_OBJ)
+						$(DEVICEOPERATORS_COMPONENT_OBJ)\
+						$(PACKETS_COMPONENT_OBJ)
 						
 
 SERVER_COMPONENT_INCLUDES=	$(CORE_COMPONENT_INCLUDES) \
@@ -137,10 +138,13 @@ CLIENT_MAIN_OBJ=$(CLIENT_MAIN_OUTPUT_FOLDER)/$(CLIENT_MAIN_OBJ_NAME).o
 CLIENT_MAIN_EXE=$(CLIENT_MAIN_OUTPUT_FOLDER)/$(CLIENT_MAIN_OBJ_NAME).exe
 CLIENT_MAIN_LIBS=-lrt -lpthread -lm #-L/usr/local/lib/dgl -ldglGauges -ldglRenderWrapper -ldgUtils -lGL -lglut -lGLU  -lgomp 
 
-$(CLIENT_MAIN_OBJ): $(CLIENT_MAIN_INCLUDES) $(CLIENT_MAIN_SRC) | $(CLIENT_MAIN_OUTPUT_FOLDER) $(CLIENT_MAIN_OUTPUT_FOLDERS)
+$(CLIENT_MAIN_OUTPUT_FOLDER):
+	mkdir -p $@
+	
+$(CLIENT_MAIN_OBJ): $(CLIENT_MAIN_INCLUDES) $(CLIENT_MAIN_SRC) | $(CLINT_MAIN_OUTPUT_FOLDER) $(CLIENT_MAIN_OUTPUT_FOLDERS)
 	$(CC) $(CFLAGS) -o $(CLIENT_MAIN_OBJ) $(CLIENT_MAIN_INCLUDES_PATHS) $(CLIENT_MAIN_SRC)
 	
-$(CLIENT_MAIN_EXE): $(CLIENT_MAIN_OBJ) $(CLIENT_MAIN_OBJECTS)
+$(CLIENT_MAIN_EXE): $(CLIENT_MAIN_OBJ) $(CLIENT_MAIN_OBJECTS) $(CLIENT_MAIN_OUTPUT_FOLDERS)
 	$(CC) $(LDFLAGS) -o $@ $(CLIENT_MAIN_OBJ) $(CLIENT_MAIN_OBJECTS) $(CLIENT_MAIN_LIBS)
 
 
