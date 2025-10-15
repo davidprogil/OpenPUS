@@ -23,14 +23,14 @@
 #define CCSDS_PRIMARY_HEADER_IS_TM (0)
 #define CCSDS_PRIMARY_HEADER_IS_TC (1)
 
-#define CCSDS_PACKET_TOTAL_LENGHT(x) ((x)->primaryHeader.dataLength+sizeof(CCSDS_PrimaryHeader_t))
-#define CCSDS_PACKET_DATA_LENGHT(x) ((x)->primaryHeader.dataLength)
+#define CCSDS_PACKET_TOTAL_LENGHT(x) ((x)->primaryHeader.dataLength+1+sizeof(CCSDS_PrimaryHeader_t))
+#define CCSDS_PACKET_DATA_LENGHT(x) ((x)->primaryHeader.dataLength+1)
 #define CCSDS_PACKET_START_DATA (sizeof(CCSDS_PrimaryHeader_t))
 
 /* types------------------------------------------------------------------------*/
 typedef struct __attribute__((packed)) _CCSDS_RequestId_t_
 {
-
+	int temp;
 }CCSDS_RequestId_t;
 
 /*CCSDS-PUS ECSS-E-ST-70-41C15April2016-PUS
@@ -74,8 +74,11 @@ typedef struct __attribute__((packed)) _CCSDS_Packet_t_
 /* none */
 
 /* public functions--------------------------------------------------------------*/
+void CCSDS_FillPrimaryHeader(CCSDS_PrimaryHeader_t *target, bool_t isTc,bool_t hasSecondaryHeader,uint16_t apid,uint16_t sequenceCount);
 bool_t CCSDS_CreatePacket(uint8_t *target,uint16_t targetNbMax,bool_t isTc,bool_t hasSecondaryHeader,uint16_t apid,uint16_t sequenceCount,uint16_t dataLength,uint8_t *data);
+bool_t CCSDS_FinalizePacket(uint8_t *target,uint16_t targetNbMax,uint16_t totalDataLength);
 void CCSDS_PrintPrimaryHeader(CCSDS_Packet_t *self);
+void CCSDS_PrintCccsdsPrimaryHeader(CCSDS_PrimaryHeader_t *self);
 void CCSDS_PrintPacket(CCSDS_Packet_t *self);
 bool_t CCSDS_IsPacketSizeValid(CCSDS_Packet_t *self,uint16_t packetNb);
 

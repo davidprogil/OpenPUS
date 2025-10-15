@@ -13,6 +13,8 @@
 /* none */
 
 /* component includes----------------------------------------------------------*/
+#include <LIB_Endian.h>
+#include <LIB_Crc.h>
 #include <SBCC_CcsdsUtils.h>
 #include <LIB_PusUtils.h>
 
@@ -93,13 +95,75 @@ void PUS_CreateTmHeader(PUS_TmSecondaryHeader_t *self, uint8_t serviceType, uint
 	//uint8_t spare0; //total size of header needs to be of a integer word size
 }
 
+void PUS_CreateAcceptanceReport(PUS_AcceptanceReport_t *self,uint8_t packetType,bool_t secondaryHeaderFlag,uint16_t applicationProcessId,uint8_t sequenceFlags,uint16_t packetSequenceCount)
+{
+	//uint8_t packetVersionNumber:3;
+	self->packetVersionNumber=1;
+	//uint8_t packetType:1;
+	self->packetType=packetType;
+	//uint8_t secondaryHeaderFlag:1;
+	self->secondaryHeaderFlag=secondaryHeaderFlag;
+	//uint16_t applicationProcessId:11;
+	self->applicationProcessId=applicationProcessId;
+	//uint8_t sequenceFlags:2;
+	self->sequenceFlags=sequenceFlags;
+	//uint16_t packetSequenceCount:14;
+	self->packetSequenceCount=packetSequenceCount;
+}
+
+void PUS_FinalizePacket(uint8_t *target,uint16_t *totalDataLength)
+{
+	//this function basically needs to add the CRC
+	CCSDS_Packet_t *packet=(CCSDS_Packet_t *)target;
+
+	//increment buffer size
+	*totalDataLength+=sizeof(PUS_Crc_t);
+	//set data field
+	packet->primaryHeader.dataLength=*totalDataLength-1-sizeof(CCSDS_PrimaryHeader_t);
+
+	//apply endieness conversion
+	LEND_Host2Network((uint8_t*)&packet->primaryHeader.dataLength,sizeof(uint16_t));
+
+	//calculate CRC
+	PUS_Crc_t crc=CRC_CcsdsCrc16Get(PUS_DEFAULT_CRC_SEED, PUS_DEFAULT_CRC_OFFSET, target, (*totalDataLength-sizeof(uint16_t)));
+	//printf("debug PUS_FinalizePacket %04X\n",crc);
+
+	//add CRC
+	LEND_Host2Network((uint8_t*)&crc,sizeof(uint16_t));
+	memcpy(&target[*totalDataLength-sizeof(PUS_Crc_t)],&crc,sizeof(crc));
+}
+
+bool_t PUS_IsCrcValid(uint8_t *target, uint16_t packetNb,uint16_t *expectedCrc,PUS_Crc_t *foundCrc)
+{
+	bool_t isValid=M_TRUE;
+
+
+	//debug
+	/*for (int ix=1;ix<packetNb;ix++)
+	{
+		uint16_t crcExpectedTemp=CRC_CcsdsCrc16Get(PUS_DEFAULT_CRC_SEED, PUS_DEFAULT_CRC_OFFSET, target, ix+1);
+		printf("%d-%02X-%04X ",ix,target[ix],crcExpectedTemp);
+	}*/
+
+	memcpy(foundCrc,&target[packetNb-2],sizeof(uint16_t));
+	LEND_Host2Network((uint8_t*)foundCrc,sizeof(uint16_t));
+
+	if (*foundCrc!=*expectedCrc)
+	{
+		isValid=M_FALSE;
+		printf("Warning: CRC error, expected 0x%04X, found 0x%04X packetNb: %d\n",*expectedCrc,*foundCrc,packetNb);
+	}
+
+	return isValid;
+}
+
 PUS_TcSecondaryHeader_t *PUS_GetTcHeader(uint8_t *packetBuffer,uint16_t packetNb)
 {
 	CCSDS_Packet_t *packet = (CCSDS_Packet_t *)packetBuffer;
 	PUS_TcSecondaryHeader_t *tcHeader=NULL;
 	if (packet->primaryHeader.secondaryHeader==M_FALSE)
 	{
-		printf("warning: APP1_DataHandler received non PUS packet\n");
+		printf("warning: PUS_GetTcHeader received non PUS packet\n");
 	}
 	else
 	{
@@ -124,7 +188,7 @@ PUS_TmSecondaryHeader_t *PUS_GetTmHeader(uint8_t *packetBuffer,uint16_t packetNb
 	PUS_TmSecondaryHeader_t *tmHeader=NULL;
 	if (packet->primaryHeader.secondaryHeader==M_FALSE)
 	{
-		printf("warning: APP1_DataHandler received non PUS packet\n");
+		printf("warning: PUS_GetTmHeader received non PUS packet\n");
 	}
 	else
 	{
@@ -141,6 +205,31 @@ PUS_TmSecondaryHeader_t *PUS_GetTmHeader(uint8_t *packetBuffer,uint16_t packetNb
 	}
 
 	return tmHeader;
+}
+
+uint16_t PUS_GetServiceSubServiceCompound(uint8_t *packetRaw,uint16_t packetNb)
+{
+	uint16_t packetId=0;
+	CCSDS_Packet_t *packet = (CCSDS_Packet_t *)packetRaw;
+	if (packet->primaryHeader.secondaryHeader==M_FALSE)
+	{
+		printf("warning: PUS_GetServiceSubServiceCompound received non PUS packet\n");
+	}
+	else
+	{
+		if (packet->primaryHeader.packetType==CCSDS_PRIMARY_HEADER_IS_TC)
+		{
+			PUS_TcPacket_t *tcPacket = (PUS_TcPacket_t*)packetRaw;
+			packetId=(tcPacket->secondaryHeader.serviceType << 8) + tcPacket->secondaryHeader.serviceSubType;
+		}
+		else
+		{
+			PUS_TmPacket_t *tmPacket = (PUS_TmPacket_t*)packetRaw;
+			packetId=(tmPacket->secondaryHeader.serviceType << 8) + tmPacket->secondaryHeader.serviceSubType;
+		}
+	}
+
+	return packetId;
 }
 
 uint8_t *PUS_GetTcDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDataLength)
@@ -161,24 +250,41 @@ uint8_t *PUS_GetTmDataPointer(uint16_t *dataSize,uint8_t *packet,uint16_t pusDat
 
 void PUS_PrintTcHeader(PUS_TcSecondaryHeader_t *self)
 {
-	printf("TC Secondary Header packet:\n");
-	printf("\t versionTcPus: %d\n",self->versionTcPus);
-	printf("\t acknowledgementFlags: %d\n",self->acknowledgementFlags);
-	printf("\t serviceType: %d\n",self->serviceType);
-	printf("\t serviceSubType: %d\n",self->serviceSubType);
-	printf("\t sourceId: %d\n",self->sourceId);
+	printf("\tTC Secondary Header packet:\n");
+	printf("\t\t versionTcPus: %d\n",self->versionTcPus);
+	printf("\t\t acknowledgementFlags: %d\n",self->acknowledgementFlags);
+	printf("\t\t serviceType: %d\n",self->serviceType);
+	printf("\t\t serviceSubType: %d\n",self->serviceSubType);
+	printf("\t\t sourceId: %d\n",self->sourceId);
 }
 
 void PUS_PrintTmHeader(PUS_TmSecondaryHeader_t *self)
 {
-	printf("TM Secondary Header packet:\n");
-	printf("\t versionTmPus: %d\n",self->versionTmPus);
-	printf("\t scTimeReferenceStatus: %d\n",self->scTimeReferenceStatus);
-	printf("\t serviceType: %d\n",self->serviceType);
-	printf("\t serviceSubType: %d\n",self->serviceSubType);
-	printf("\t messageTypeCounter: %d\n",self->messageTypeCounter);
-	printf("\t destinationId: %d\n",self->destinationId);
-	printf("\t time: %d\n",self->time);
+	printf("\t TM Secondary Header packet:\n");
+	printf("\t\t versionTmPus: %d\n",self->versionTmPus);
+	printf("\t\t scTimeReferenceStatus: %d\n",self->scTimeReferenceStatus);
+	printf("\t\t serviceType: %d\n",self->serviceType);
+	printf("\t\t serviceSubType: %d\n",self->serviceSubType);
+	printf("\t\t messageTypeCounter: %d\n",self->messageTypeCounter);
+	printf("\t\t destinationId: %d\n",self->destinationId);
+	printf("\t\t time: %d\n",self->time);
+}
+
+void PUS_PrintAcceptanceReport(PUS_AcceptanceReport_t *self)
+{
+	printf("\t Acceptance Report:\n");
+	//uint8_t packetVersionNumber:3;
+	printf("\t\t packetVersionNumber: %d\n",self->packetVersionNumber);
+	//uint8_t packetType:1;
+	printf("\t\t packetType: %d\n",self->packetType);
+	//uint8_t secondaryHeaderFlag:1;
+	printf("\t\t secondaryHeaderFlag: %d\n",self->secondaryHeaderFlag);
+	//uint16_t applicationProcessId:11;
+	printf("\t\t applicationProcessId: %d\n",self->applicationProcessId);
+	//uint8_t sequenceFlags:2;
+	printf("\t\t sequenceFlags: %d\n",self->sequenceFlags);
+	//uint16_t packetSequenceCount:14;
+	printf("\t\t packetSequenceCount: %d\n",self->packetSequenceCount);
 }
 
 bool_t PUS_JoinTcHeaderAndData(uint8_t *target,uint16_t targetMaxNb,PUS_TcSecondaryHeader_t *header,uint8_t *data, uint16_t dataNb)
