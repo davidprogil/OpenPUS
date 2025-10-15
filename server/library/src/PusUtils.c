@@ -122,14 +122,14 @@ void PUS_FinalizePacket(uint8_t *target,uint16_t *totalDataLength)
 	packet->primaryHeader.dataLength=*totalDataLength-1-sizeof(CCSDS_PrimaryHeader_t);
 
 	//apply endieness conversion
-	LEND_Host2Network((uint8_t*)&packet->primaryHeader.dataLength,sizeof(uint16_t));
+	//LEND_Host2Network((uint8_t*)&packet->primaryHeader.dataLength,sizeof(uint16_t));
 
 	//calculate CRC
 	PUS_Crc_t crc=CRC_CcsdsCrc16Get(PUS_DEFAULT_CRC_SEED, PUS_DEFAULT_CRC_OFFSET, target, (*totalDataLength-sizeof(uint16_t)));
 	//printf("debug PUS_FinalizePacket %04X\n",crc);
 
 	//add CRC
-	LEND_Host2Network((uint8_t*)&crc,sizeof(uint16_t));
+	//LEND_Host2Network((uint8_t*)&crc,sizeof(uint16_t));
 	memcpy(&target[*totalDataLength-sizeof(PUS_Crc_t)],&crc,sizeof(crc));
 }
 
@@ -146,7 +146,7 @@ bool_t PUS_IsCrcValid(uint8_t *target, uint16_t packetNb,uint16_t *expectedCrc,P
 	}*/
 
 	memcpy(foundCrc,&target[packetNb-2],sizeof(uint16_t));
-	LEND_Host2Network((uint8_t*)foundCrc,sizeof(uint16_t));
+	//LEND_Host2Network((uint8_t*)foundCrc,sizeof(uint16_t));
 
 	if (*foundCrc!=*expectedCrc)
 	{

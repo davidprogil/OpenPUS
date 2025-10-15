@@ -60,7 +60,7 @@ bool_t CCSDS_FinalizePacket(uint8_t *target,uint16_t targetNbMax,uint16_t totalD
 		//header
 		CCSDS_PrimaryHeader_t *primaryHeader=(CCSDS_PrimaryHeader_t *)&target[0];
 		primaryHeader->dataLength=totalDataLength-sizeof(CCSDS_PrimaryHeader_t)-1;
-		LEND_Host2Network((uint8_t*)&primaryHeader->dataLength,sizeof(uint16_t));
+		//LEND_Host2Network((uint8_t*)&primaryHeader->dataLength,sizeof(uint16_t));
 	}
 
 	return isError;
@@ -154,7 +154,7 @@ bool_t CCSDS_IsPacketSizeValid(CCSDS_Packet_t *self,uint16_t packetNb)
 	else
 	{
 		//swap size if needed because it is needed for next step
-		LEND_Network2Host((uint8_t*)&self->primaryHeader.dataLength,sizeof(uint16_t));
+		//LEND_Network2Host((uint8_t*)&self->primaryHeader.dataLength,sizeof(uint16_t));
 		//printf("debug CCSDS_IsPacketSizeValid %d\n",self->primaryHeader.dataLength);
 	}
 

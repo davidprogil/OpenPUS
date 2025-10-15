@@ -180,6 +180,10 @@ void DPDU_CreateTmAndSend(DPDU_Pdu_t *this,uint8_t *data,uint16_t dataNb,uint16_
 		this->pduStatusTmCounter++;
 		(*this->pidMsgCounter)++;
 	}
+	else
+	{
+		printf("warning: DPDU_CreateTmAndSend packet created with errors\n");
+	}
 }
 
 /* end */
