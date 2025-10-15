@@ -1,0 +1,63 @@
+#*******************************************************************************/
+#* Copyright David Gil 1998-2025                                               */
+#* 								                                               */
+#* davidgil@dgadv.com 			                                               */
+#*******************************************************************************/
+
+BLPPACKETS_COMPONENT_NAME=blpPackets
+BLPPACKETS_COMPONENT_FOLDER=$(PROJECT_PATH)/server/$(BLPPACKETS_COMPONENT_NAME)
+BLPPACKETS_COMPONENT_OUTPUT_FOLDER=$(BLPPACKETS_COMPONENT_FOLDER)/bin
+
+$(BLPPACKETS_COMPONENT_OUTPUT_FOLDER):
+	mkdir -p $@
+
+#objects includes -----------------
+include $(BLPPACKETS_COMPONENT_FOLDER)/Fillers.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/FillersUser.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/Serializers.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/SerializersUser.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/Validators.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/ValidatorsUser.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/Deserializers.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/DeserializersUser.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/Printers.mk
+include $(BLPPACKETS_COMPONENT_FOLDER)/PrintersUser.mk
+
+BLPPACKETS_COMPONENT_INCLUDES_PATHS= \
+						$(BLPFILLERS_INCLUDES_PATHS) \
+						$(BLPFILLERSUSER_INCLUDES_PATHS) \
+						$(BLPSERIALIZERS_INCLUDES_PATHS) \
+						$(BLPSERIALIZERSUSER_INCLUDES_PATHS) \
+						$(BLPVALIDATORS_INCLUDES_PATHS) \
+						$(BLPVALIDATORSUSER_INCLUDES_PATHS) \
+						$(BLPDESERIALIZERS_INCLUDES_PATHS) \
+						$(BLPDESERIALIZERSUSER_INCLUDES_PATHS) \
+						$(BLPPRINTERS_INCLUDES_PATHS) \
+						$(BLPPRINTERSUSER_INCLUDES_PATHS) 
+
+
+BLPPACKETS_COMPONENT_INCLUDES=	$(BLPPACKETS_COMPONENT_FOLDER)/$(BLPPACKETS_COMPONENT_NAME).mk \
+						$(BLPFILLERS_INCLUDES) \
+						$(BLPFILLERSUSER_INCLUDES) \
+						$(BLPSERIALIZERS_INCLUDES) \
+						$(BLPSERIALIZERSUSER_INCLUDES) \
+						$(BLPVALIDATORS_INCLUDES) \
+						$(BLPVALIDATORSUSER_INCLUDES) \
+						$(BLPDESERIALIZERS_INCLUDES) \
+						$(BLPDESERIALIZERSUSER_INCLUDES) \
+						$(BLPPRINTERS_INCLUDES) \
+						$(BLPPRINTERSUSER_INCLUDES) 
+
+
+BLPPACKETS_COMPONENT_OBJ= \
+						$(BLPFILLERS_OBJ) \
+						$(BLPFILLERSUSER_OBJ) \
+						$(BLPSERIALIZERS_OBJ) \
+						$(BLPSERIALIZERSUSER_OBJ) \
+						$(BLPVALIDATORS_OBJ) \
+						$(BLPVALIDATORSUSER_OBJ) \
+						$(BLPDESERIALIZERS_OBJ) \
+						$(BLPDESERIALIZERSUSER_OBJ) \
+						$(BLPPRINTERS_OBJ) \
+						$(BLPPRINTERSUSER_OBJ) 
+

@@ -12,7 +12,7 @@
 /* none */
 
 /* component includes----------------------------------------------------------*/
-#include <PKT_PacketsService1.h>
+#include <BLP_PrintersUser.h>
 
 /* local macros ---------------------------------------------------------------*/
 /* none */
@@ -30,8 +30,24 @@
 /* none */
 
 /* public functions -----------------------------------------------------------*/
-/* none */
+void BLPPU_PrintCCSDS_PrimaryHeader(CCSDS_PrimaryHeader_t *dataStructure)
+{
+	CCSDS_PrintCccsdsPrimaryHeader(dataStructure);
+}
 
+void BLPPU_PrintPUS_TcSecondaryHeader(PUS_TcSecondaryHeader_t *dataStructure)
+{
+	PUS_PrintTcHeader(dataStructure);
+}
+
+void BLPPU_PrintPUS_TmSecondaryHeader(PUS_TmSecondaryHeader_t *dataStructure)
+{
+	PUS_PrintTmHeader(dataStructure);
+}
+void BLPPU_PrintPUS_AcceptanceReport(PUS_AcceptanceReport_t *dataStructure)
+{
+	PUS_PrintAcceptanceReport(dataStructure);
+}
 /* local functions ------------------------------------------------------------*/
 /* none */
 

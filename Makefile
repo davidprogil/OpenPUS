@@ -26,7 +26,7 @@ include ./server/library/library.mk
 # core
 include ./server/core/core.mk
 # mission
-include ./server/packets/packets.mk
+include ./server/blpPackets/blpPackets.mk
 # application
 include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
@@ -161,7 +161,7 @@ clean:
 	rm -rf $(SERVER_COMMANDSDEFINITIONS_COMPONENT_OUTPUT_FOLDER)
 	rm -rf $(SERVER_COMPONENT_OBJ)
 
-all: compileClient compileServer
+all:  compileServer compileClient
 
 
 	

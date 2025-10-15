@@ -58,10 +58,12 @@ uint16_t sequenceCount=0;
 bool_t isRunAgain=M_TRUE;
 uint32_t upTime=0;
 uint32_t upTimeSub=0;
+ABOS_thread_handle_t threadReceiveTm;
 
 /* local prototypes -----------------------------------------------------------*/
-/* none */
-
+ABOS_DEFINE_TASK(ReceiveTm);
+void displayMenu();
+int getInputWithTimeout(int timeoutSeconds);
 
 /* public functions -----------------------------------------------------------*/
 int main(int argc, char *argv[])
@@ -84,58 +86,85 @@ int main(int argc, char *argv[])
 	ABDL_Init(&dataLink,M_FALSE);
 
 	//other starts
-	//N/A
+	ABOS_ThreadCreate(
+			ReceiveTm, /* function */
+			(int8_t *)"RECEIVTM", /* name */
+			0, /* stack depth */
+			(void *)&dataLink, /* parameters */
+			0, /* priority */
+			&threadReceiveTm); /* handler */
 
 	//Infinite Cycle
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
-	uint16_t receivedNb;
+
 	uint8_t tcPacketData[sizeof(PUS_TcSecondaryHeader_t)+2];
-	uint64_t dataSize;
+	uint64_t dataSize=0;
 	bool_t isError=M_FALSE;
+	bool_t isPacketToSend=M_FALSE;
 	uint8_t channelIx=0;
+	uint8_t channelSwitch=0;
+	int choice;
 	while (isRunAgain==M_TRUE)
 	{
 
-		printf("client %d\n",upTime);
+		//printf("client %d\n",upTime);
+		isPacketToSend=M_FALSE;
+		//menu
+		displayMenu();
+		scanf("%d", &choice);
 
-		//send packets
-		if ((upTimeSub==5)||(upTimeSub==10)||(upTimeSub==15)||(upTimeSub==20)||(upTimeSub==25))
+		switch (choice) {
+		case 1: //get status
+			dataSize=sizeof(PUS_TcSecondaryHeader_t);
+			isError=PUS_CreateTcDataField(
+					tcPacketData,//uint8_t *target
+					sizeof(tcPacketData),//uint16_t targetMaxNb
+					NULL,//uint8_t *data
+					0,//uint16_t dataNb
+					M_FALSE,//bool_t isWantedAcknowledgment
+					M_FALSE,//bool_t isWantedExecutionResul
+					DPDU_PUS_SERVICE_ID,//uint8_t serviceType
+					DPDU_PUS_CHANNELSTATUS_TC_SUBSERVICE_ID,//uint8_t serviceSubType
+					GROUND_APID);//uint16_t sourceId
+			isPacketToSend=M_TRUE;
+			break;
+		case 2: //change channels
+			uint8_t dummyDataToSend[2] = {channelIx++,channelSwitch};
+			if (channelIx==4)
+			{
+				channelIx=0;
+				channelSwitch++;
+				if (channelSwitch>1)
+				{
+					channelSwitch=0;
+				}
+			}
+
+			dataSize=sizeof(PUS_TcSecondaryHeader_t)+2;
+			isError=PUS_CreateTcDataField(
+					tcPacketData,//uint8_t *target
+					sizeof(tcPacketData),//uint16_t targetMaxNb
+					dummyDataToSend,//uint8_t *data
+					sizeof(dummyDataToSend),//uint16_t dataNb
+					M_FALSE,//bool_t isWantedAcknowledgment
+					M_FALSE,//bool_t isWantedExecutionResul
+					DPDU_PUS_SERVICE_ID,//uint8_t serviceType
+					DPDU_PUS_CHANNELONOFF_TC_SUBSERVICE_ID,//uint8_t serviceSubType
+					GROUND_APID);//uint16_t sourceId
+			isPacketToSend=M_TRUE;
+			break;
+		case 999:
+			printf("\nExiting program...\n");
+			exit(0);
+			break;
+		default:
+			printf("\nInvalid choice!\n");
+			break;
+		}
+
+		//send whatever packet that was created
+		if (M_TRUE==isPacketToSend)
 		{
-			printf("time to send packet\n");
-			//data
-			uint8_t dummyDataToSend[2] = {channelIx++,1};
-			if (channelIx==4) channelIx=0;
-
-			if (upTimeSub!=25)
-			{
-				dataSize=sizeof(PUS_TcSecondaryHeader_t)+2;
-				isError=PUS_CreateTcDataField(
-						tcPacketData,//uint8_t *target
-						sizeof(tcPacketData),//uint16_t targetMaxNb
-						dummyDataToSend,//uint8_t *data
-						sizeof(dummyDataToSend),//uint16_t dataNb
-						M_FALSE,//bool_t isWantedAcknowledgment
-						M_FALSE,//bool_t isWantedExecutionResul
-						DPDU_PUS_SERVICE_ID/*17*/,//uint8_t serviceType
-						DPDU_PUS_CHANNELONOFF_TC_SUBSERVICE_ID,//uint8_t serviceSubType
-						GROUND_APID);//uint16_t sourceId
-
-			}
-			else //instead of switching channels request status
-			{
-				dataSize=sizeof(PUS_TcSecondaryHeader_t);
-				isError=PUS_CreateTcDataField(
-						tcPacketData,//uint8_t *target
-						sizeof(tcPacketData),//uint16_t targetMaxNb
-						NULL,//uint8_t *data
-						0,//uint16_t dataNb
-						M_FALSE,//bool_t isWantedAcknowledgment
-						M_FALSE,//bool_t isWantedExecutionResul
-						DPDU_PUS_SERVICE_ID/*17*/,//uint8_t serviceType
-						DPDU_PUS_CHANNELSTATUS_TC_SUBSERVICE_ID,//uint8_t serviceSubType
-						GROUND_APID);//uint16_t sourceId
-			}
-
 			if(M_FALSE==isError)
 			{
 				//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
@@ -170,6 +199,41 @@ int main(int argc, char *argv[])
 				printf("warning: main, error creating PUS packet\n");
 			}
 		}
+
+
+		//wait
+		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
+		upTime++;
+		upTimeSub++;
+		if (upTimeSub==30) upTimeSub=0;
+
+	}
+	//wait for all tasks to stop hopefully
+	ABOS_Sleep(1000);
+	printf("END\n");
+	return EXIT_SUCCESS;
+}
+/* local functions ------------------------------------------------------------*/
+void displayMenu() {
+	printf("\n=== TC Menu ===\n");
+	printf("1. Get Status\n");
+	printf("2. Change channels\n");
+	printf("999. Exit\n");
+	printf("Enter your choice: ");
+}
+
+ABOS_DEFINE_TASK(ReceiveTm)
+{
+
+	ABDL_DataLink_t *this=(ABDL_DataLink_t*)param;
+	uint16_t upTime;
+	uint16_t receivedNb;
+	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
+
+	while (this->isRunAgain==M_TRUE)
+	{
+		//printf("debug: ReceiveTm %d\n",upTime);
+
 		//receive packets
 		if (ABDL_GetOnePacket(&dataLink,packetBuffer,&receivedNb))
 		{
@@ -215,22 +279,19 @@ int main(int argc, char *argv[])
 			{
 				printf("warning: received invalid telemetry\n");
 			}
+			displayMenu();
 		}
 
-		//wait
-		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
-		upTime++;
-		upTimeSub++;
-		if (upTimeSub==30) upTimeSub=0;
 
+
+		//sleep
+		ABOS_Sleep(1000);
+
+		//increment time
+		upTime++;
 	}
-	//wait for all tasks to stop hopefully
-	ABOS_Sleep(1000);
-	printf("END\n");
-	return EXIT_SUCCESS;
+	return ABOS_TASK_RETURN;
 }
-/* local functions ------------------------------------------------------------*/
-/* none */
 
 
 
