@@ -26,7 +26,7 @@ include ./server/library/library.mk
 # core
 include ./server/core/core.mk
 # mission
-include ./server/blpPackets/blpPackets.mk
+# none
 # application
 include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
