@@ -14,11 +14,11 @@
 #include <myTypes.h>
 #include <configuration.h>
 #include <ABOS_Osal.h>
-#include <ABDL_DataLink.h>
 #include <LIB_Queue.h>
 
 /* component includes----------------------------------------------------------*/
 #include <SBCC_CcsdsUtils.h>
+#include "../../abstraction/include/ABDL_UdpDataLink.h"
 
 /* macros-----------------------------------------------------------------------*/
 /* none */
@@ -55,7 +55,7 @@ typedef struct _SBRO_Router_t_
 	uint32_t tcSubscribersNo;
 
 	//datalink
-	ABDL_DataLink_t dataLink;
+	ABDL_UdpDataLink_t dataLink;
 
 }SBRO_Router_t;
 

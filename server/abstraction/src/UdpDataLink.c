@@ -10,7 +10,7 @@
 #include <string.h>
 
 /* application includes--------------------------------------------------------*/
-#include <ABDL_DataLink.h>
+#include <ABDL_UdpDataLink.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -29,12 +29,12 @@
 
 /* local prototypes -----------------------------------------------------------*/
 void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port);
-void ABDL_SendDirect(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
+void ABDL_SendDirect(ABDL_UdpDataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
 ABOS_DEFINE_TASK(ABDL_ReceiveThread);
 ABOS_DEFINE_TASK(ABDL_SendThread);
 
 /* public functions -----------------------------------------------------------*/
-void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer)
+void ABDL_Init(ABDL_UdpDataLink_t *this,bool_t isServer)
 {
 	printf("ABDL_Init\n");
 	uint16_t receivePort=ABDL_SERVER_PORT;
@@ -95,12 +95,12 @@ void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer)
 			&this->threadSend); /* handler */
 }
 
-void ABDL_Stop(ABDL_DataLink_t *this)
+void ABDL_Stop(ABDL_UdpDataLink_t *this)
 {
 	this->isRunAgain=M_FALSE;
 }
 
-void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
+void ABDL_Send(ABDL_UdpDataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 {
 	printf("debug: ABDL_Send %d bytes\n",dataOutNb);
 	ABOS_MutexLock(&this->sendQueueMutex,ABOS_TASK_MAX_DELAY);
@@ -113,7 +113,7 @@ void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 }
 
 
-bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb)
+bool_t ABDL_GetOnePacket(ABDL_UdpDataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb)
 {
 	bool_t isData=M_FALSE;
 	ABOS_MutexLock(&this->receiveQueueMutex,ABOS_TASK_MAX_DELAY);
@@ -131,7 +131,7 @@ bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInN
 /* local functions ------------------------------------------------------------*/
 ABOS_DEFINE_TASK(ABDL_SendThread)
 {
-	ABDL_DataLink_t *this=(ABDL_DataLink_t*)param;
+	ABDL_UdpDataLink_t *this=(ABDL_UdpDataLink_t*)param;
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
 	uint16_t packetSize;
 	while(this->isRunAgain==M_TRUE)
@@ -152,7 +152,7 @@ ABOS_DEFINE_TASK(ABDL_ReceiveThread)
 {
 	int32_t n=ERROR;
 	uint32_t len;
-	ABDL_DataLink_t *this=(ABDL_DataLink_t*)param;
+	ABDL_UdpDataLink_t *this=(ABDL_UdpDataLink_t*)param;
 	uint8_t buffer[SBRO_PACKET_MAX_NB];
 	while(this->isRunAgain==M_TRUE)
 	{
@@ -201,7 +201,7 @@ void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port)
 	}
 }
 
-void ABDL_SendDirect(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
+void ABDL_SendDirect(ABDL_UdpDataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 {
 	uint16_t n=sendto(this->sendSocket.sockfd, (const char *)dataOut, dataOutNb,
 			MSG_CONFIRM, (const struct sockaddr *) &this->sendSocket.servaddr,

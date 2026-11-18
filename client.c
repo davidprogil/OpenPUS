@@ -15,9 +15,9 @@
 /* application includes--------------------------------------------------------*/
 #include <configuration.h>
 #include <ABOS_Osal.h>
-#include <ABDL_DataLink.h>
 #include <SBCC_CcsdsUtils.h>
 #include <LIB_PusUtils.h>
+#include "server/abstraction/include/ABDL_UdpDataLink.h"
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -53,7 +53,7 @@ typedef struct _DPDU_TmPduStatus_t_
 
 /* local variables ------------------------------------------------------------*/
 ABOS_Osal_t osal;
-ABDL_DataLink_t dataLink;
+ABDL_UdpDataLink_t dataLink;
 uint16_t sequenceCount=0;
 bool_t isRunAgain=M_TRUE;
 uint32_t upTime=0;
@@ -225,7 +225,7 @@ void displayMenu() {
 ABOS_DEFINE_TASK(ReceiveTm)
 {
 
-	ABDL_DataLink_t *this=(ABDL_DataLink_t*)param;
+	ABDL_UdpDataLink_t *this=(ABDL_UdpDataLink_t*)param;
 	uint16_t upTime;
 	uint16_t receivedNb;
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];

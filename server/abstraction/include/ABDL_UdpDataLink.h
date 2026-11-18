@@ -4,8 +4,8 @@
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
 
-#ifndef ABDL_DataLink_H
-#define ABDL_DataLink_H
+#ifndef ABDL_UdpDataLink_H
+#define ABDL_UdpDataLink_H
 
 /* system includes-------------------------------------------------------------*/
 #include <arpa/inet.h>
@@ -45,7 +45,7 @@ typedef struct _ABDL_Socket_t_
 
 }ABDL_Socket_t;
 
-typedef struct _ABDL_DataLink_t_
+typedef struct _ABDL_UdpDataLink_t_
 {
 
 
@@ -66,20 +66,20 @@ typedef struct _ABDL_DataLink_t_
 	uint8_t receiveQueueBuffer[ABDL_RECEIVE_QUEUE_NB];
 	ABOS_mutex_t receiveQueueMutex;
 
-}ABDL_DataLink_t;
+}ABDL_UdpDataLink_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer);
-void ABDL_Stop(ABDL_DataLink_t *this);
-void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
-bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb);
+void ABDL_Init(ABDL_UdpDataLink_t *this,bool_t isServer);
+void ABDL_Stop(ABDL_UdpDataLink_t *this);
+void ABDL_Send(ABDL_UdpDataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
+bool_t ABDL_GetOnePacket(ABDL_UdpDataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb);
 
 
 
 
 /* end */
-#endif /* ABDL_DataLink_H */
+#endif /* ABDL_UdpDataLink_H */
 
